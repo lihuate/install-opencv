@@ -77,8 +77,8 @@ make -j$(getconf _NPROCESSORS_ONLN) >> $logfile 2>&1
 log "Install..."
 make install >> $logfile 2>&1
 
-# ARM 64
-if [ "$arch" = "aarch64" ]; then
+# ARM 64, x86_64
+if [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
 	# See if LD_LIBRARY_PATH exists and if not add it to /etc/environment
 	if grep -q "LD_LIBRARY_PATH" /etc/environment; then
 		log "LD_LIBRARY_PATH already exists"
