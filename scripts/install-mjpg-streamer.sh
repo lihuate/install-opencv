@@ -41,11 +41,11 @@ log(){
 
 # Point to our libjpeg-turbo
 export CPATH="/opt/libjpeg-turbo/include"
-# ARM 32
-if [ "$arch" = "armv7l" ]; then
+# ARM 32, x86
+if [ "$arch" = "i586" ] || [ "$arch" = "i686" ] || [ "$arch" = "armv7l"]; then
 	export LIBRARY_PATH="/opt/libjpeg-turbo/lib32"
-# ARM 64
-elif [ "$arch" = "aarch64" ]; then
+# ARM 64, x86_64
+elif [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
 	export LIBRARY_PATH="/opt/libjpeg-turbo/lib64"
 # Not supported
 else
