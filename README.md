@@ -23,11 +23,20 @@ Usually after you install a complex framework like OpenCV you want to start expl
 
 ###Provides
 * Latest Oracle JDK 8 and Apache Ant
+    * Patch memory leaks as I find them. Get more information [here](https://github.com/sgjava/opencvmem)
+    * FourCC class
+    * CaptureUI Applet to view images/video since there's no imshow with the bindings
 * Latest libjpeg-turbo optimized for SIMD
+    * Patch to mute common warnings that will fill up the logs
 * Latest mjpg-streamer (10/27/2013 last commit) optimized with libjpeg-turbo
 * Latest OpenCV with opencv_contrib optimized for libjpeg-turbo
-* Application provides motion, pedestrian (HOG) and Haar Cascade detection
-* Builds for Python, Java and C++
+* Python application provides motion, pedestrian (HOG) and Haar Cascade detection
+* Java, Python and C++ examples can be easily run from Eclipse.
+    * Capture UI
+    * Motion detection
+    * People detection
+    * Camera Calibration
+    * Drawing
 
 ###Test Camera
 If you plan on processing only video or image files then you can skip this section. Live video will allow you to create smart camera applications that react to a live video stream (versus a streaming only camera). You will need to select a USB camera that works under [Linux](http://elinux.org/RPi_USB_Webcams) and has the proper resolution.
