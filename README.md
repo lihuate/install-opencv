@@ -1,12 +1,12 @@
 ![Title](images/title.png)
 
-If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 16.04, Debian GNU/Linux 8 (jessie) and probably other distributions. ARMV7 (32 bit) and ARMV8 (64 bit) are currently working. I'm trying to optimize on the platforms I'm testing which are CHIP and Pine64 right now. I plan to test ODROIDs and x86 as well soon.
+If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 16.04, Debian GNU/Linux 8 (jessie) and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working. I'm trying to hardware optimize on the platforms I'm testing which are CHIP and Pine64 right now.
 
 ![Pedestrian detection](images/pedestrian-detect.png)
 
-Usually after you install a complex framework like OpenCV you want to start exploring (unless it is a dependency for another project). You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I'll describe later on. These methods will scale nicely on multi-core SBCs and x86 computers.
-
 The image above is a screenshot of a video frame that has been processed. Motion is bounded by green boxes and pedestrians by blue boxes.
+
+Usually after you install a complex framework like OpenCV you want to start exploring (unless it is a dependency for another project). You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I'll describe later on. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
 
 * [Provides](#provides)
 * [Test Camera](#test-camera)
