@@ -23,9 +23,9 @@ The image above is a screenshot of a video frame that has been processed. Motion
 
 ###Provides
 * Latest Oracle JDK 8 and Apache Ant
-* Latest libjpeg-turbo optimized for Cortex-A8 and Neon SIMD
+* Latest libjpeg-turbo optimized for SIMD
 * Latest mjpg-streamer (10/27/2013 last commit) optimized with libjpeg-turbo
-* Latest OpenCV with opencv_contrib optimized for libjpeg-turbo, Cortex-A8 and Neon
+* Latest OpenCV with opencv_contrib optimized for libjpeg-turbo
 * Application provides motion, pedestrian (HOG) and Haar Cascade detection
 * Builds for Python, Java and C++
 
