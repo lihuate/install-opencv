@@ -28,10 +28,10 @@
 arch=$(uname -m)
 
 # Temp dir for downloads, etc.
-tmpdir="/media/usb0/temp"
+tmpdir="$HOME/temp"
 
 # Build home
-buildhome="/media/usb0"
+buildhome="$HOME"
 
 # OpenCV extra cflags
 extracflag="-mtune=cortex-a8 -mfloat-abi=hard"
