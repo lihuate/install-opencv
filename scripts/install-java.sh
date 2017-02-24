@@ -39,6 +39,12 @@ if [ "$arch" = "armv7l" ]; then
 # ARM 64
 elif [ "$arch" = "aarch64" ]; then
 	jdkarchive="jdk-8u121-linux-arm64-vfp-hflt.tar.gz"
+# X86
+elif [ "$arch" = "i586" ] || [ "$arch" = "i686" ]; then
+	jdkarchive="jdk-8u121-linux-i586.tar.gz"
+# X86_64	
+elif [ "$arch" = "x86_64" ]; then
+	jdkarchive="jdk-8u121-linux-x64.tar.gz"
 # Not supported
 else
 	echo "\nNo supported architectures detected!"
