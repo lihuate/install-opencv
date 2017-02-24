@@ -4,7 +4,7 @@ If you are interested in compiling the latest version of OpenCV for ARM based SB
 
 ![Pedestrian detection](images/pedestrian-detect.png)
 
-The image above is a screenshot of a video frame that has been processed. Motion is bounded by green boxes and pedestrians by blue boxes.
+The image above is a screenshot of a video frame that has been processed by [motiondetect.py](https://github.com/sgjava/install-opencv/blob/master/python/codeferm/motiondetect.py). Motion is bounded by green boxes and pedestrians by blue boxes.
 
 Usually after you install a complex framework like OpenCV you want to start exploring (unless it is a dependency for another project). You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I'll describe later on. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
 
