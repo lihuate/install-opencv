@@ -129,11 +129,11 @@ sed -e "/set(OPENCV_EXTRA_CXX_FLAGS \"\")/c\set(OPENCV_EXTRA_CXX_FLAGS \"${extra
 export CFLAGS="$extra_c_flag"
 export CXXFLAGS="$extra_c_flag"
 log "CMake..."
-# ARM 32
-if [ "$arch" = "armv7l" ]; then
+# ARM 32, x86
+if [ "$arch" = "i586" ] || [ "$arch" = "i686" ] || [ "$arch" = "armv7l" ]; then
 	jpeglib="/opt/libjpeg-turbo/lib32/libjpeg.a"
-# ARM 64
-elif [ "$arch" = "aarch64" ]; then
+# ARM 64, x86_64
+elif [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
 	jpeglib="/opt/libjpeg-turbo/lib64/libjpeg.a"
 # Not supported
 else
