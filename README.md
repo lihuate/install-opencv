@@ -175,9 +175,9 @@ To run C++ example projects
 ![CaptureUI C++](images/captureui-cpp.png)
 
 To create new C++ project
-* Change to C/C++ perspcetive, File, New, C++ Project, Project name: test, Hello World C++ Project, Cross GCC, Next, Next, Next, Finish
+* Change to C/C++ perspcetive, File, New, C++ Project, Project name: test, Hello World C++ Project, GCC C++ Compiler, Next, Next, Next, Finish
 * Open terminal (Crtl+Alt+T) and run `pkg-config --cflags opencv` and note output for next step
-* Right click project, Properties, C/C++ Build, Settings, Cross GCC Compiler, Includes, Include paths(-l), click +, Directory: /usr/local/include/opencv, OK'
+* Right click project, Properties, C/C++ Build, Settings, GCC C++ Compiler, Includes, Include paths(-l), click +, Directory: /usr/local/include/opencv, OK'
 * Open terminal (Crtl+Alt+T) and run `pkg-config --libs opencv` and note output for next step
 * Right click project, Properties, C/C++ Build, Settings, Cross G++ Linker, Libraries, Library search path (-L), click +, Directory: /usr/local/lib, OK
 * Right click project, Properties, C/C++ Build, Settings, Cross G++ Linker, Libraries, Libraries(-l), click +, Libraries(-l): opencv_core, repeat for other libraries such as opencv_imgproc opencv_highgui, OK
