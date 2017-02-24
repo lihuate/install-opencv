@@ -25,7 +25,7 @@ curdir=$(cd `dirname $0` && pwd)
 # Source config file
 . "$curdir"/config.sh
 
-# Fix "final link failed: Bad value" in OpenCV build
+# Fixes "final link failed: Bad value" in OpenCV build
 export CFLAGS="-fPIC -O3"
 export CXXFLAGS="-fPIC -O3"
 
