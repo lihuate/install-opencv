@@ -19,9 +19,6 @@ dateformat="+%a %b %-eth %Y %I:%M:%S %p %Z"
 starttime=$(date "$dateformat")
 starttimesec=$(date +%s)
 
-# Set to True if you get a white image or stream.
-whitepatch="True"
-
 # Get current directory
 curdir=$(cd `dirname $0` && pwd)
 

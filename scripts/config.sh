@@ -38,3 +38,13 @@ extracflag="-mtune=cortex-a8 -mfloat-abi=hard"
 
 # Custom cmake options
 cmakeopts="-DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_QT=OFF -DWITH_GTK=OFF -DWITH_TBB=ON -DBUILD_TBB=OFF -DENABLE_NEON=ON"
+
+# Change to False if you get a white image in mjpg-streamer
+whitepatch="True"
+
+# Oracle JDK
+javahome=/usr/lib/jvm/jdk1.8.0
+
+# Patch OpenCV Java code to fix memory leaks and performance issues.
+# See https://github.com/sgjava/opencvmem for details
+patchjava="False"

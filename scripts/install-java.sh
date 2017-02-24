@@ -26,9 +26,6 @@ curdir=$(cd `dirname $0` && pwd)
 # Source config file
 . "$curdir"/config.sh
 
-# Oracle JDK
-javahome=/usr/lib/jvm/jdk1.8.0
-
 # JDK archive stuff
 
 jdkurl="http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/"
