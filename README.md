@@ -4,7 +4,7 @@ If you are interested in compiling the latest version of OpenCV for ARM based SB
 
 ![Pedestrian detection](images/pedestrian-detect.png)
 
-The image above is a screenshot of a video frame that has been processed by [motiondetect.py](https://github.com/sgjava/install-opencv/blob/master/python/codeferm/motiondetect.py). Motion is bounded by green boxes and pedestrians by blue boxes.
+The image above is a screenshot of a video frame that has been processed by [motiondetect.py](https://github.com/sgjava/install-opencv/blob/master/opencv-python/codeferm/motiondetect.py). Motion is bounded by green boxes and pedestrians by blue boxes.
 
 You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I'll describe later on. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
 
@@ -18,7 +18,9 @@ You have to optimize extensively on platforms with an incompatible VPU/GPU such 
 * [Install OpenCV](#install-opencv)
 * [Motion Detection](#motion-detection)
     * [Boosting Performance](#boosting-performance)
-* [Java](#java)    
+* [Java](#java)
+* [Python](#python)
+* [C++](#c)  
 * [References](#references)
 * [FreeBSD License](#freebsd-license)
 
@@ -111,7 +113,7 @@ I see a lot of posts on the Internet about OpenCV performance on various ARM bas
 
 Problem: Slow or inconsistent FPS using USB camera.
 
-Solution: Use MJPEG compatible USB camera, mjpg-streamer and my [mjpegclient.py](https://github.com/sgjava/install-opencv/blob/master/python/codeferm/mjpegclient.py).
+Solution: Use MJPEG compatible USB camera, mjpg-streamer and my [mjpegclient.py](https://github.com/sgjava/install-opencv/blob/master/opencv-python/codeferm/mjpegclient.py).
 
 Problem: OpenCV functions max out the CPU resulting in low FPS.
 
@@ -121,14 +123,14 @@ Solution: Sample only some frames. Motion detection using the moving average alg
 
 Solution: Analyze only motion ROI (regions of interest). By analyzing only ROI you can cut down processing time tremendously. For instance, if only 10% of the frame has motion then the OpenCV function should run about 900% faster! This may not work where there's a large change frame after frame. Luckily this will not happen for most security type scenarios. If a region is too small for the detector it is not processed thus speeding things up even more.
 
-The default [motiondetect.ini](https://github.com/sgjava/install-opencv/blob/master/python/config/motiondetect.ini) is configured to detect pedestrians from a local video file in the project. Try this first and make sure it works properly.
-* `cd ~/install-opencv/python/codeferm`
+The default [motiondetect.ini](https://github.com/sgjava/install-opencv/blob/master/opencv-python/config/motiondetect.ini) is configured to detect pedestrians from a local video file in the project. Try this first and make sure it works properly.
+* `cd ~/install-opencv/opencv-python/codeferm`
 * `python motiondetect.py`
 * Video will record to ~/motion/test using camera name (default test), date for directory and time for file name
 * This is handy for debugging issues or fine tuning using the same file over and over
 
 This time we will run mjpg-streamer in background. Using `-b` did not work for me as a normal user, so I used `nohup`. Eventually mjpg-streamer will become a service, but this works for testing. To run example yourself use (this is 5 FPS example):
-* `cd ~/install-opencv/python/codeferm`
+* `cd ~/install-opencv/opencv-python/codeferm`
 * `nohup mjpg_streamer -i "/usr/local/lib/input_uvc.so -n -f 5 -r 640x480" -o "/usr/local/lib/output_http.so -w /usr/local/www" &`
 
 ### Java
@@ -140,11 +142,12 @@ To run Java programs in Eclipse you need add the OpenCV library.
 * Import [Eclipse project](https://github.com/sgjava/install-opencv/tree/master/java)
 
 To run compiled class (Canny for this example) from shell:
-* `cd ~/install-opencv/java`
+* `cd ~/install-opencv/opencv-java`
 * `java -Djava.library.path=/home/<username>/opencv/build/lib -cp /home/<username>/opencv/build/bin/opencv-320.jar:bin com.codeferm.opencv.Canny`
 
 #### Things to be aware of
 * There are no bindings generated for OpenCV's GPU module.
+* Missing VideoWriter generated via patch (if needed).
 * Missing constants generated via patch.
 * There's no imshow equivalent, so check out [CaptureUI](https://github.com/sgjava/install-opencv/blob/master/opencv-java/src/com/codeferm/opencv/CaptureUI.java)
 * Understand how memory management [works](https://github.com/sgjava/opencvmem)
@@ -152,39 +155,63 @@ To run compiled class (Canny for this example) from shell:
 * The JNI code can modify variables with the final modifier. You need to be aware of the implications of this since it is not normal Java behavior.
 
 ![CaptureUI Java](images/captureui-java.png)
-   
-The Canny example is slightly faster in Java (3.08 seconds) compared to Python
-(3.18 seconds). In general, there's not enough difference in processing over 900
-frames to pick one set of bindings over another for performance reasons.
-`-agentlib:hprof=cpu=samples` is used to profile.
-```
-OpenCV 3.2.0-dev
-Input file: ../resources/traffic.mp4
-Output file: ../output/canny-java.avi
-Resolution: 480x360
-921 frames
-242.1 FPS, elapsed time: 3.80 seconds
 
-CPU SAMPLES BEGIN (total = 310) Fri Jan  3 16:09:24 2014
-rank   self  accum   count trace method
-   1 40.32% 40.32%     125 300218 org.opencv.imgproc.Imgproc.Canny_0
-   2 22.58% 62.90%      70 300220 org.opencv.highgui.VideoWriter.write_0
-   3 10.00% 72.90%      31 300215 org.opencv.highgui.VideoCapture.read_0
-   4  9.03% 81.94%      28 300219 org.opencv.core.Core.bitwise_and_0
-   5  9.03% 90.97%      28 300221 org.opencv.imgproc.Imgproc.cvtColor_1
-   6  5.81% 96.77%      18 300222 org.opencv.imgproc.Imgproc.GaussianBlur_2
-   7  0.32% 97.10%       1 300016 sun.misc.Perf.createLong
-   8  0.32% 97.42%       1 300077 java.util.zip.ZipFile.open
-   9  0.32% 97.74%       1 300095 java.util.jar.JarVerifier.<init>
-  10  0.32% 98.06%       1 300102 java.lang.ClassLoader$NativeLibrary.load
-  11  0.32% 98.39%       1 300105 java.util.Arrays.copyOfRange
-  12  0.32% 98.71%       1 300163 sun.nio.fs.UnixNativeDispatcher.init
-  13  0.32% 99.03%       1 300212 sun.reflect.ReflectionFactory.newConstructorAccessor
-  14  0.32% 99.35%       1 300214 org.opencv.highgui.VideoCapture.VideoCapture_1
-  15  0.32% 99.68%       1 300216 java.util.Arrays.copyOfRange
-  16  0.32% 100.00%       1 300217 com.codeferm.opencv.Canny.main
-CPU SAMPLES END
+### Python
+To run Python programs in Eclipse you need [PyDev](http://pydev.org) installed.
+* Help, Install New Software..., Add..., Name: PyDev, Location: http://pydev.org/updates, OK, check PyDev, Next>, Next>, I accept the terms of the license agreement, Finish, Trust certificate, OK
+* Import [Eclipse project](https://github.com/sgjava/install-opencv/tree/master/opencv-python)
+
+![CaptureUI Java](images/captureui-python.png)
+
+`-m cProfile -s time` is used to profile.
+
+### C++
+To create a new C++ project in Eclipse you need to install CDT plugin first (or use the Eclipse IDE for C/C++ Developers). I'm using the Eclipse IDE for Java EE Developers, so I installed the CDT plugin.
+* Help, Eclipse Marketplace..., Add..., Find: ide cdt, click Go, OK, select Eclipse CDT (C/C++ Development Tooling) and click Install, Next, Next, I accept the terms of the license agreement, Finish, Yes
+
+To run C++ example projects
+* Import [Eclipse projects](https://github.com/sgjava/install-opencv/tree/master/opencv-cpp) one at a time
+
+![CaptureUI C++](images/captureui-cpp.png)
+
+To create new C++ project
+* Change to C/C++ perspcetive, File, New, C++ Project, Project name: test, Hello World C++ Project, Cross GCC, Next, Next, Next, Finish
+* Open terminal (Crtl+Alt+T) and run `pkg-config --cflags opencv` and note output for next step
+* Right click project, Properties, C/C++ Build, Settings, Cross GCC Compiler, Includes, Include paths(-l), click +, Directory: /usr/local/include/opencv, OK'
+* Open terminal (Crtl+Alt+T) and run `pkg-config --libs opencv` and note output for next step
+* Right click project, Properties, C/C++ Build, Settings, Cross G++ Linker, Libraries, Library search path (-L), click +, Directory: /usr/local/lib, OK
+* Right click project, Properties, C/C++ Build, Settings, Cross G++ Linker, Libraries, Libraries(-l), click +, Libraries(-l): opencv_core, repeat for other libraries such as opencv_imgproc opencv_highgui, OK
+* Open test.cpp and replace all the text with:
 ```
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+
+int main() {
+	// Create black empty image
+	Mat image = Mat::zeros(240, 320, CV_8UC3);
+	// Draw circles
+	for (int a = 0; a < 10; a = a + 1) {
+		circle(image, Point(160, 120), 10.0 * a, Scalar(128, 128, 255), 2, 8);
+	}
+	// Draw lines
+	for (int a = 0; a < 15; a = a + 1) {
+		line(image, Point(2 + a * a, 40), Point(318, 40 + a * a), Scalar(0, 255, 0),
+				2, 8);
+	}
+	// Draw text
+	putText(image, "C++ Drawing example", Point(18, 20), FONT_HERSHEY_SIMPLEX,
+			0.8, Scalar(255, 255, 255), 2);
+	// Show image
+	imshow("Drawing example", image);
+	// Wait for key press
+	waitKey();
+	return 0;
+}
+```
+* Save file, right click project, Build Project, right click project, Run As, Local C/C++ Application
+
+![C++ Example](images/example-cpp.png)
 
 ###References
 * [openCV 3.1.0 optimized for Raspberry Pi, with libjpeg-turbo 1.5.0 and NEON SIMD support](http://hopkinsdev.blogspot.com/2016/06/opencv-310-optimized-for-raspberry-pi.html)
