@@ -8,6 +8,11 @@
 #
 # Tested configs:
 #
+# x86 generic (no GPU/VPU optimizations)
+#
+# extracflag=""
+# cmakeopts="-DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_QT=OFF -DWITH_GTK=OFF -DWITH_TBB=ON -DBUILD_TBB=ON"
+#
 # OpenCV 3.2 detects NEON, so we leave that out
 #
 # CHIP R8 - TBB build failed, so we use built in one
@@ -34,10 +39,10 @@ tmpdir="$HOME/temp"
 buildhome="$HOME"
 
 # OpenCV extra cflags
-extracflag="-mtune=cortex-a8 -mfloat-abi=hard"
+extracflag=""
 
 # Custom cmake options
-cmakeopts="-DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_QT=OFF -DWITH_GTK=OFF -DWITH_TBB=ON -DBUILD_TBB=OFF -DENABLE_NEON=ON"
+cmakeopts="-DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_QT=OFF -DWITH_GTK=OFF -DWITH_TBB=ON -DBUILD_TBB=ON"
 
 # Change to False if you get a white image in mjpg-streamer
 whitepatch="True"
