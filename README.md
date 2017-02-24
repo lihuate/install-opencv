@@ -6,7 +6,7 @@ If you are interested in compiling the latest version of OpenCV for ARM based SB
 
 The image above is a screenshot of a video frame that has been processed by [motiondetect.py](https://github.com/sgjava/install-opencv/blob/master/python/codeferm/motiondetect.py). Motion is bounded by green boxes and pedestrians by blue boxes.
 
-Usually after you install a complex framework like OpenCV you want to start exploring (unless it is a dependency for another project). You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I'll describe later on. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
+You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I'll describe later on. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
 
 * [Provides](#provides)
 * [Test Camera](#test-camera)
@@ -18,6 +18,7 @@ Usually after you install a complex framework like OpenCV you want to start expl
 * [Install OpenCV](#install-opencv)
 * [Motion Detection](#motion-detection)
     * [Boosting Performance](#boosting-performance)
+* [Java](#java)    
 * [References](#references)
 * [FreeBSD License](#freebsd-license)
 
@@ -129,6 +130,61 @@ The default [motiondetect.ini](https://github.com/sgjava/install-opencv/blob/mas
 This time we will run mjpg-streamer in background. Using `-b` did not work for me as a normal user, so I used `nohup`. Eventually mjpg-streamer will become a service, but this works for testing. To run example yourself use (this is 5 FPS example):
 * `cd ~/install-opencv/python/codeferm`
 * `nohup mjpg_streamer -i "/usr/local/lib/input_uvc.so -n -f 5 -r 640x480" -o "/usr/local/lib/output_http.so -w /usr/local/www" &`
+
+### Java
+To run Java programs in Eclipse you need add the OpenCV library.
+* Window, Preferences, Java, Build Path, User Libraries, New..., OpenCV, OK
+* Add External JARs..., ~/opencv/build/bin/opencv-320.jar
+* Native library location, Edit..., External Folder..., ~/opencv/build/lib, OK
+* Right click project, Properties, Java Build Path, Libraries, Add Library..., User Library, OpenCV, Finish, OK
+* Import [Eclipse project](https://github.com/sgjava/install-opencv/tree/master/java)
+
+To run compiled class (Canny for this example) from shell:
+* `cd ~/install-opencv/java`
+* `java -Djava.library.path=/home/<username>/opencv/build/lib -cp /home/<username>/opencv/build/bin/opencv-320.jar:bin com.codeferm.opencv.Canny`
+
+#### Things to be aware of
+* There are no bindings generated for OpenCV's GPU module.
+* Missing constants generated via patch.
+* There's no imshow equivalent, so check out [CaptureUI](https://github.com/sgjava/install-opencv/blob/master/opencv-java/src/com/codeferm/opencv/CaptureUI.java)
+* Understand how memory management [works](https://github.com/sgjava/opencvmem)
+* Make sure you call Mat.free() to free native memory
+* The JNI code can modify variables with the final modifier. You need to be aware of the implications of this since it is not normal Java behavior.
+
+![CaptureUI Java](images/captureui-java.png)
+   
+The Canny example is slightly faster in Java (3.08 seconds) compared to Python
+(3.18 seconds). In general, there's not enough difference in processing over 900
+frames to pick one set of bindings over another for performance reasons.
+`-agentlib:hprof=cpu=samples` is used to profile.
+```
+OpenCV 3.2.0-dev
+Input file: ../resources/traffic.mp4
+Output file: ../output/canny-java.avi
+Resolution: 480x360
+921 frames
+242.1 FPS, elapsed time: 3.80 seconds
+
+CPU SAMPLES BEGIN (total = 310) Fri Jan  3 16:09:24 2014
+rank   self  accum   count trace method
+   1 40.32% 40.32%     125 300218 org.opencv.imgproc.Imgproc.Canny_0
+   2 22.58% 62.90%      70 300220 org.opencv.highgui.VideoWriter.write_0
+   3 10.00% 72.90%      31 300215 org.opencv.highgui.VideoCapture.read_0
+   4  9.03% 81.94%      28 300219 org.opencv.core.Core.bitwise_and_0
+   5  9.03% 90.97%      28 300221 org.opencv.imgproc.Imgproc.cvtColor_1
+   6  5.81% 96.77%      18 300222 org.opencv.imgproc.Imgproc.GaussianBlur_2
+   7  0.32% 97.10%       1 300016 sun.misc.Perf.createLong
+   8  0.32% 97.42%       1 300077 java.util.zip.ZipFile.open
+   9  0.32% 97.74%       1 300095 java.util.jar.JarVerifier.<init>
+  10  0.32% 98.06%       1 300102 java.lang.ClassLoader$NativeLibrary.load
+  11  0.32% 98.39%       1 300105 java.util.Arrays.copyOfRange
+  12  0.32% 98.71%       1 300163 sun.nio.fs.UnixNativeDispatcher.init
+  13  0.32% 99.03%       1 300212 sun.reflect.ReflectionFactory.newConstructorAccessor
+  14  0.32% 99.35%       1 300214 org.opencv.highgui.VideoCapture.VideoCapture_1
+  15  0.32% 99.68%       1 300216 java.util.Arrays.copyOfRange
+  16  0.32% 100.00%       1 300217 com.codeferm.opencv.Canny.main
+CPU SAMPLES END
+```
 
 ###References
 * [openCV 3.1.0 optimized for Raspberry Pi, with libjpeg-turbo 1.5.0 and NEON SIMD support](http://hopkinsdev.blogspot.com/2016/06/opencv-310-optimized-for-raspberry-pi.html)
