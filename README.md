@@ -114,7 +114,7 @@ Solution: Analyze only motion ROI (regions of interest). By analyzing only ROI y
 The default [motiondetect.ini](https://github.com/sgjava/install-opencv/blob/master/python/config/motiondetect.ini) is configured to detect pedestrians from a local video file in the project. Try this first and make sure it works properly.
 * `cd ~/install-opencv/python/codeferm`
 * `python motiondetect.py`
-* Video will record to ~/motion/test using camera name, date for directory and time for file name
+* Video will record to ~/motion/test using camera name (default test), date for directory and time for file name
 * This is handy for debugging issues or fine tuning using the same file over and over
 
 This time we will run mjpg-streamer in background. Using `-b` did not work for me as a normal user, so I used `nohup`. Eventually mjpg-streamer will become a service, but this works for testing. To run example yourself use (this is 5 FPS example):
