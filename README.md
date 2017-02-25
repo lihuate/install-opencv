@@ -18,6 +18,7 @@ You have to optimize extensively on platforms with an incompatible VPU/GPU such 
 * [Install OpenCV](#install-opencv)
 * [Motion Detection](#motion-detection)
     * [Boosting Performance](#boosting-performance)
+    * [Run Motion Detection](#run-motion-detection)
 * [Java](#java)
 * [Python](#python)
 * [C++](#c)  
@@ -123,7 +124,7 @@ Solution: Sample only some frames. Motion detection using the moving average alg
 
 Solution: Analyze only motion ROI (regions of interest). By analyzing only ROI you can cut down processing time tremendously. For instance, if only 10% of the frame has motion then the OpenCV function should run about 900% faster! This may not work where there's a large change frame after frame. Luckily this will not happen for most security type scenarios. If a region is too small for the detector it is not processed thus speeding things up even more.
 
-#### Run motion detection
+#### Run Motion Detection
 * `sudo apt-get -y install python-setuptools`
 * `easy_install pexpect`
 
