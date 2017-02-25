@@ -128,10 +128,6 @@ if [ "$arch" = "i586" ] || [ "$arch" = "i686" ] || [ "$arch" = "armv7l" ]; then
 # ARM 64, x86_64
 elif [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
 	jpeglib="/opt/libjpeg-turbo/lib64/libjpeg.a"
-# Not supported
-else
-	echo "\nNo supported architectures detected!"
-	exit 1
 fi
 # Make any changes in config.sh cmakeopts for extra options
 cmake -DOPENCV_EXTRA_MODULES_PATH=$contribhome/modules -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/usr/local -DEXTRA_C_FLAGS=$extra_c_flag -DEXTRA_CXX_FLAGS=$extra_c_flag -DWITH_JPEG=ON -DBUILD_JPEG=OFF -DJPEG_INCLUDE_DIR=/opt/libjpeg-turbo/include -DJPEG_LIBRARY=$jpeglib $cmakeopts .. >> $logfile 2>&1
