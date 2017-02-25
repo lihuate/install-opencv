@@ -100,7 +100,7 @@ final class MotionDetectResize {
     /**
      * Mark frames with motion detected.
      *
-     * args[0] = source file or will default to "../resources/960x720.mp4" if no
+     * args[0] = source file or will default to "../resources/traffic.mp4" if no
      * args passed.
      *
      * @param args
@@ -113,7 +113,7 @@ final class MotionDetectResize {
         if (args.length == 0) {
             // If no arguments were passed then default to
             // ../resources/traffic.mp4
-            url = "../resources/960x720.mp4";
+            url = "../resources/traffic.mp4";
         } else {
             url = args[0];
         }
