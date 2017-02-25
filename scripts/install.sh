@@ -29,7 +29,7 @@ log(){
 	echo "$timestamp $1" >> $logfile 2>&1
 }
 
-log "Installing OpenCV on CHIP..."
+log "Installing OpenCV..."
 
 sh ./install-java.sh
 sh ./install-libjpeg-turbo.sh

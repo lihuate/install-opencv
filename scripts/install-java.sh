@@ -42,10 +42,6 @@ elif [ "$arch" = "i586" ] || [ "$arch" = "i686" ]; then
 # X86_64	
 elif [ "$arch" = "x86_64" ]; then
 	jdkarchive="jdk-8u121-linux-x64.tar.gz"
-# Not supported
-else
-	echo "\nNo supported architectures detected!"
-	exit 1
 fi
 
 # Apache Ant

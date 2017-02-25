@@ -55,7 +55,7 @@ javahome=/usr/lib/jvm/jdk1.8.0
 patchjava="False"
 
 # Make sure we support architecture
-if [ "$arch" = "i586" ] || [ "$arch" = "i686" ] || [ "$arch" = "armv7l" ] [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
+if [ "$arch" = "i586" ] || [ "$arch" = "i686" ] || [ "$arch" = "armv7l" ] || [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
 	echo "\nArchitecture supported."
 # Not supported
 else
