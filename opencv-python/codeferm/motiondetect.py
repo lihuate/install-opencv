@@ -149,8 +149,11 @@ def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteS
     # SCP video file to central server
     scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
 
-def pedestriansDetected():
+def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after pedestrians detected"""
+    return # remove to actually do something
+    # SCP video file to central server
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
 
 def main():
     """Main function"""
@@ -359,6 +362,7 @@ def main():
                     # Rename video to show pedestrian found
                     if peopleFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/pedestrian-%s" % (fileDir, fileName))
+                        pedestrianDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.deleteSource, config.timeout)
                     # Rename video to show cascade found
                     elif cascadeFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/cascade-%s" % (fileDir, fileName))
