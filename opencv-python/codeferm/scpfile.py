@@ -7,7 +7,7 @@ sgoldsmith@codeferm.com
 
 import os, subprocess
 
-def copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
+def copyFile(logger, hostName, userName, localFileName, remoteDir, timeout):
     """SCP file using command line."""
     # mkdir on remote host
     command = "ssh %s@%s \"%s\"" % (userName, hostName, "mkdir -p %s" % remoteDir)
@@ -17,7 +17,3 @@ def copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource,
     command = "scp %s %s@%s:%s%s%s" % (localFileName, userName, hostName, remoteDir, os.sep, os.path.basename(localFileName))
     logger.info("%s" % command)
     subprocess.call(command, shell=True)
-    # Delete SCP source file       
-    if deleteSource:
-        logger.info("Deleting %s" % localFileName)
-        os.remove(localFileName)

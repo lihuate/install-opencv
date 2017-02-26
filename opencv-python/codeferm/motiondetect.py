@@ -143,17 +143,17 @@ def initVideo(url, fps, socketTimeout):
         mjpeg = False
     return mjpeg, retFps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary
 
-def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
+def motionDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
     """Actions to take after motion detected"""
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
 
-def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
+def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
     """Actions to take after pedestrians detected"""
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
 
 def main():
     """Main function"""
@@ -200,7 +200,6 @@ def main():
         config.userName = parser.get("scp", "userName")
         config.remoteDir = parser.get("scp", "remoteDir")
         config.timeout = parser.getint("scp", "timeout")
-        config.deleteSource = parser.getboolean("scp", "deleteSource")
     
     if len(sys.argv) < 2:
         configFileName = "../config/motiondetect.ini"
@@ -362,13 +361,13 @@ def main():
                     # Rename video to show pedestrian found
                     if peopleFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/pedestrian-%s" % (fileDir, fileName))
-                        pedestrianDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.deleteSource, config.timeout)
+                        pedestrianDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.timeout)
                     # Rename video to show cascade found
                     elif cascadeFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/cascade-%s" % (fileDir, fileName))
                     else:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/motion-%s" % (fileDir, fileName))
-                        motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.deleteSource, config.timeout)
+                        motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.timeout)
                     recording = False
         elapsed = time.time() - appstart
         logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds" % (frameTotal / elapsed, elapsed))        
