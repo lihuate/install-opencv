@@ -15,6 +15,9 @@ Optional pedestrian detector using sampling, resize and motion ROI. Histogram of
 Gradients ([Dalal2005]) object detector is used. You can get up to 1200%
 performance boost using this method.
 
+Optional Haar Feature-based Cascade Classifier for Object Detection. The object detector
+was initially proposed by Paul Viola and improved by Rainer Lienhart.
+
 A frame buffer is used to record 1 second before motion threshold is triggered.
 
 sys.argv[1] = configuration file name or will default to "motiondetect.ini" if no args passed.
@@ -23,7 +26,7 @@ sys.argv[1] = configuration file name or will default to "motiondetect.ini" if n
 
 """
 
-import ConfigParser, logging, sys, os, time, datetime, numpy, cv2, urlparse, mjpegclient, motiondet, pedestriandet, cascadedet
+import ConfigParser, logging, sys, os, time, datetime, numpy, cv2, urlparse, mjpegclient, motiondet, pedestriandet, cascadedet, scpfile
 
 def markRectSize(target, rects, widthMul, heightMul, boxColor, boxThickness):
     """Mark rectangles in image"""
@@ -117,11 +120,11 @@ def saveFrame(frame, saveDir, saveFileName):
         writer.write(frame)
         writer.close()
         
-def initVideo(url, fps):
+def initVideo(url, fps, socketTimeout):
     # See if we should use MJPEG client
     if urlparse.urlparse(url).scheme == "http":
         # Open MJPEG stream
-        socketFile, streamSock, boundary = mjpegclient.open(url, 10)
+        socketFile, streamSock, boundary = mjpegclient.open(url, socketTimeout)
         # Determine image dimensions
         jpeg, image = mjpegclient.getFrame(socketFile, boundary)
         frameHeight, frameWidth, unknown = image.shape
@@ -129,6 +132,7 @@ def initVideo(url, fps):
         videoCapture = None
         mjpeg = True
     else:
+        # Process file or other URL with VideoCapture
         videoCapture = cv2.VideoCapture(url)
         frameHeight = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frameWidth = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -138,7 +142,16 @@ def initVideo(url, fps):
         boundary = None        
         mjpeg = False
     return mjpeg, retFps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary
-            
+
+def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
+    """Actions to take after motion detected"""
+    return # remove to actually do something
+    # SCP video file to central server
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
+
+def pedestriansDetected():
+    """Actions to take after pedestrians detected"""
+
 def main():
     """Main function"""
     
@@ -147,6 +160,7 @@ def main():
         # Set camera related data attributes
         config.cameraName = parser.get("camera", "name")    
         config.url = parser.get("camera", "url")
+        config.socketTimeout = parser.getint("camera", "socketTimeout")
         config.resizeWidthDiv = parser.getint("camera", "resizeWidthDiv")
         config.fpsInterval = parser.getfloat("camera", "fpsInterval")
         config.fps = parser.getint("camera", "fps")
@@ -178,7 +192,12 @@ def main():
         config.minNeighbors = parser.getint("cascade", "minNeighbors")
         config.minWidth = parser.getint("cascade", "minWidth")
         config.minHeight = parser.getint("cascade", "minHeight")
-    
+        # Set SCP related attributes
+        config.hostName = parser.get("scp", "hostName")
+        config.userName = parser.get("scp", "userName")
+        config.remoteDir = parser.get("scp", "remoteDir")
+        config.timeout = parser.getint("scp", "timeout")
+        config.deleteSource = parser.getboolean("scp", "deleteSource")
     
     if len(sys.argv) < 2:
         configFileName = "../config/motiondetect.ini"
@@ -197,7 +216,7 @@ def main():
     # Load values from ini file
     config()
     # Initialize video    
-    mjpeg, fps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary = initVideo(config.url, config.fps)
+    mjpeg, fps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary = initVideo(config.url, config.fps, config.socketTimeout)
     logger.info("OpenCV %s" % cv2.__version__)
     logger.info("URL: %s, fps: %d" % (config.url, fps))
     logger.info("Resolution: %dx%d" % (frameWidth, frameHeight))
@@ -345,6 +364,7 @@ def main():
                         os.rename("%s/%s" % (fileDir, fileName), "%s/cascade-%s" % (fileDir, fileName))
                     else:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/motion-%s" % (fileDir, fileName))
+                        motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.deleteSource, config.timeout)
                     recording = False
         elapsed = time.time() - appstart
         logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds" % (frameTotal / elapsed, elapsed))        

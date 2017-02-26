@@ -125,8 +125,9 @@ Solution: Sample only some frames. Motion detection using the moving average alg
 Solution: Analyze only motion ROI (regions of interest). By analyzing only ROI you can cut down processing time tremendously. For instance, if only 10% of the frame has motion then the OpenCV function should run about 900% faster! This may not work where there's a large change frame after frame. Luckily this will not happen for most security type scenarios. If a region is too small for the detector it is not processed thus speeding things up even more.
 
 #### Run Motion Detection
-* `sudo apt-get -y install python-setuptools`
-* `easy_install pexpect`
+If you wish to execute remote commands after detection then you should generate ssh keypair, so you do not have to pass passwords around or save them in a file. It's handy to scp video files to a central server or cloud storage after detection.
+* ssh-keygen
+* ssh-copy-id user@host
 
 The default [motiondetect.ini](https://github.com/sgjava/install-opencv/blob/master/opencv-python/config/motiondetect.ini) is configured to detect pedestrians from a local video file in the project. Try this first and make sure it works properly.
 * `cd ~/install-opencv/opencv-python/codeferm`
