@@ -1,1 +1,1 @@
-Example output goes here. Do not delete file!
+Example output goes here. Do not delete!
