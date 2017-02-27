@@ -145,15 +145,28 @@ def initVideo(url, fps, socketTimeout):
 
 def motionDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
     """Actions to take after motion detected"""
+    logger.info("Motion detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
     scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
+    logger.info("Motion detected subprocess submitted")
 
 def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
     """Actions to take after pedestrians detected"""
+    logger.info("Pedestrian detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
     scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
+    logger.info("Pedestrian detected subprocess submitted")
+
+def cascadeDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
+    """Actions to take after pedestrians detected"""
+    logger.info("Cascade detected subprocess submit")
+    return # remove to actually do something
+    # SCP video file to central server
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
+    logger.info("Cascade detected subprocess submitted")
+
 
 def main():
     """Main function"""
@@ -298,7 +311,8 @@ def main():
                             logger.debug("Maximum motion change: %4.2f" % motionPercent)
                         if not recording:
                             # Construct directory name from camera name, recordDir and date
-                            fileDir = "%s/%s/%s" % (os.path.expanduser(config.recordDir), config.cameraName, now.strftime("%Y-%m-%d"))
+                            dateStr = now.strftime("%Y-%m-%d")
+                            fileDir = "%s/%s/%s" % (os.path.expanduser(config.recordDir), config.cameraName, dateStr)
                             # Create dir if it doesn"t exist
                             if not os.path.exists(fileDir):
                                 os.makedirs(fileDir)
@@ -361,13 +375,14 @@ def main():
                     # Rename video to show pedestrian found
                     if peopleFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/pedestrian-%s" % (fileDir, fileName))
-                        pedestrianDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.timeout)
+                        pedestrianDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.timeout)
                     # Rename video to show cascade found
                     elif cascadeFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/cascade-%s" % (fileDir, fileName))
+                        cascadeDetected(logger, config.hostName, config.userName, "%s/cascade-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.timeout)
                     else:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/motion-%s" % (fileDir, fileName))
-                        motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), config.remoteDir, config.timeout)
+                        motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.timeout)
                     recording = False
         elapsed = time.time() - appstart
         logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds" % (frameTotal / elapsed, elapsed))        
