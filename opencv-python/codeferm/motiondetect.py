@@ -66,8 +66,6 @@ def markRectWeight(target, locList, foundLocsList, foundWghtsList, widthMul, hei
             # Calculate full size
             x4 = x3 * widthMul
             y4 = y3 * heightMul
-            w4 = w3 * widthMul
-            h4 = h3 * heightMul
             # Mark target
             cv2.rectangle(target, (x2 + x4, y2 + y4), (x2 + x4 + w2, y2 + y4 + h2), boxColor, boxThickness)
             label = "%1.2f" % foundWeights[i]
@@ -91,8 +89,6 @@ def markRoi(target, locList, foundLocsList, widthMul, heightMul, boxColor, boxTh
             # Calculate full size
             x4 = x3 * widthMul
             y4 = y3 * heightMul
-            w4 = w3 * widthMul
-            h4 = h3 * heightMul
             # Mark target
             cv2.rectangle(target, (x2 + x4, y2 + y4), (x2 + x4 + w2, y2 + y4 + h2), boxColor, boxThickness)
             label = "%dx%d" % (w2, h2)
@@ -143,28 +139,28 @@ def initVideo(url, fps, socketTimeout):
         mjpeg = False
     return mjpeg, retFps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary
 
-def motionDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
+def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after motion detected"""
     logger.info("Motion detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
     logger.info("Motion detected subprocess submitted")
 
-def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
+def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after pedestrians detected"""
     logger.info("Pedestrian detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
     logger.info("Pedestrian detected subprocess submitted")
 
-def cascadeDetected(logger, hostName, userName, localFileName, remoteDir, timeout):
+def cascadeDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after pedestrians detected"""
     logger.info("Cascade detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, timeout)
+    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
     logger.info("Cascade detected subprocess submitted")
 
 
@@ -213,6 +209,7 @@ def main():
         config.userName = parser.get("scp", "userName")
         config.remoteDir = parser.get("scp", "remoteDir")
         config.timeout = parser.getint("scp", "timeout")
+        config.deleteSource = parser.getboolean("scp", "deleteSource")
     
     if len(sys.argv) < 2:
         configFileName = "../config/motiondetect.ini"
@@ -375,14 +372,14 @@ def main():
                     # Rename video to show pedestrian found
                     if peopleFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/pedestrian-%s" % (fileDir, fileName))
-                        pedestrianDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.timeout)
+                        pedestrianDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.deleteSource, config.timeout)
                     # Rename video to show cascade found
                     elif cascadeFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/cascade-%s" % (fileDir, fileName))
-                        cascadeDetected(logger, config.hostName, config.userName, "%s/cascade-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.timeout)
+                        cascadeDetected(logger, config.hostName, config.userName, "%s/cascade-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.deleteSource, config.timeout)
                     else:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/motion-%s" % (fileDir, fileName))
-                        motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.timeout)
+                        motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.deleteSource, config.timeout)
                     recording = False
         elapsed = time.time() - appstart
         logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds" % (frameTotal / elapsed, elapsed))        
