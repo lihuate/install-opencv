@@ -11,13 +11,15 @@ def copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource,
     """SCP file using command line."""
     # mkdir on remote host
     command = "ssh %s@%s \"%s\"" % (userName, hostName, "mkdir -p %s" % remoteDir)
-    logger.info("%s" % command)
-    subprocess.call(command, shell=True)
+    logger.info(" Submitting %s" % command)
+    proc = subprocess.Popen([command], shell=True)
+    logger.info("Submitted process %d" % proc.pid)
     # scp file
     if deleteSource:
         deleteCommand = "; rm -f %s" % localFileName
     else:
         deleteCommand = ""
     command = "scp %s %s@%s:%s/%s%s" % (localFileName, userName, hostName, remoteDir, os.path.basename(localFileName), deleteCommand)
-    logger.info("%s" % command)
-    subprocess.call(command, shell=True)
+    logger.info(" Submitting %s" % command)
+    proc = subprocess.Popen([command], shell=True)
+    logger.info("Submitted process %d" % proc.pid)
