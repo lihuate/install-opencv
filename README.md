@@ -60,6 +60,13 @@ If you plan on processing only video or image files then you can skip this secti
 * `sudo apt-get install git-core`
 * `cd ~/`
 * `git clone --depth 1 https://github.com/sgjava/install-opencv.git`
+* On ARM platforms with limited memory create a swap file or the build may fail
+with an out of memory exception. To create a 1GB swap file use:
+    * `sudo su -`
+    * `dd if=/dev/zero of=tmpswap bs=1024 count=1M`
+    * `mkswap tmpswap`
+    * `swapon tmpswap`
+    * `free`
 
 ###Install The Whole Enchilada
 This is probably the easiest way to install everything, but you can follow the individual steps below to build or rebuild individual components. There are values you can change in the individual scripts, so read them over. Skip the rest of the individual scripts below if you run this.
