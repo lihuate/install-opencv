@@ -25,7 +25,7 @@ def copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource,
         deleteCommand = "; rm -f %s" % localFileName
     else:
         deleteCommand = ""
-    command = "sleep 2; scp %s %s@%s:%s/%s%s" % (localFileName, userName, hostName, remoteDir, os.path.basename(localFileName), deleteCommand)
+    command = "scp %s %s@%s:%s/%s%s" % (localFileName, userName, hostName, remoteDir, os.path.basename(localFileName), deleteCommand)
     logger.info(" Submitting %s" % command)
     proc = subprocess.Popen([command], shell=True)
     logger.info("Submitted process %d" % proc.pid)
