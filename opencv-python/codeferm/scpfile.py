@@ -7,13 +7,19 @@ sgoldsmith@codeferm.com
 
 import os, subprocess
 
+curRemoteDir = None
+
 def copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """SCP file using command line."""
-    # mkdir on remote host
-    command = "ssh %s@%s \"%s\"" % (userName, hostName, "mkdir -p %s" % remoteDir)
-    logger.info(" Submitting %s" % command)
-    proc = subprocess.Popen([command], shell=True)
-    logger.info("Submitted process %d" % proc.pid)
+    global curRemoteDir
+    # Create remote dir only once
+    if curRemoteDir != remoteDir:
+        curRemoteDir = remoteDir
+        # mkdir on remote host
+        command = "ssh %s@%s \"%s\"" % (userName, hostName, "mkdir -p %s" % remoteDir)
+        logger.info(" Submitting %s" % command)
+        proc = subprocess.Popen([command], shell=True)
+        logger.info("Submitted process %d" % proc.pid)
     # scp file
     if deleteSource:
         deleteCommand = "; rm -f %s" % localFileName
