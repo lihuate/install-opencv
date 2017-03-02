@@ -26,7 +26,7 @@ sys.argv[1] = configuration file name or will default to "motiondetect.ini" if n
 
 """
 
-import ConfigParser, logging, sys, os, time, datetime, threading, numpy, cv2, urlparse, mjpegclient, motiondet, pedestriandet, cascadedet, scpfile
+import ConfigParser, logging, sys, os, time, datetime, numpy, cv2, urlparse, mjpegclient, motiondet, pedestriandet, cascadedet, scpfile
 
 def markRectSize(target, rects, widthMul, heightMul, boxColor, boxThickness):
     """Mark rectangles in image"""
@@ -142,7 +142,7 @@ def initVideo(url, fps, socketTimeout):
 def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after motion detected"""
     logger.info("Motion detected subprocess submit")
-    return  # remove to actually do something
+    return # remove to actually do something
     # SCP video file to central server
     scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
     logger.info("Motion detected subprocess submitted")
@@ -150,7 +150,7 @@ def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteS
 def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after pedestrians detected"""
     logger.info("Pedestrian detected subprocess submit")
-    return  # remove to actually do something
+    return # remove to actually do something
     # SCP video file to central server
     scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
     logger.info("Pedestrian detected subprocess submitted")
@@ -158,17 +158,11 @@ def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, del
 def cascadeDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after pedestrians detected"""
     logger.info("Cascade detected subprocess submit")
-    return  # remove to actually do something
+    return # remove to actually do something
     # SCP video file to central server
     scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
     logger.info("Cascade detected subprocess submitted")
 
-def worker(logger, videoWriter):
-    """Thread worker function"""
-    logger.info("Start del videoWriter")
-    del videoWriter
-    logger.info("End del videoWriter")
-    return
 
 def main():
     """Main function"""
@@ -374,8 +368,7 @@ def main():
                 # Threshold to stop recording
                 if motionPercent <= config.stopThreshold or not frameOk:
                     logger.info("Stop recording")
-                    thread = threading.Thread(target=worker(logger, videoWriter))
-                    thread.start()
+                    del videoWriter
                     # Rename video to show pedestrian found
                     if peopleFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/pedestrian-%s" % (fileDir, fileName))
