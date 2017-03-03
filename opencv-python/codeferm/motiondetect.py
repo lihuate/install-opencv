@@ -179,6 +179,7 @@ def config(parser):
     config.mark = parser.getboolean("camera", "mark")
     config.saveFrames = parser.getboolean("camera", "saveFrames")
     # Set motion related data attributes
+    config.ignoreMask = parser.get("motion", "ignoreMask")
     config.kSize = eval(parser.get("motion", "kSize"), {}, {})
     config.alpha = parser.getfloat("motion", "alpha")
     config.blackThreshold = parser.getint("motion", "blackThreshold")
@@ -186,6 +187,7 @@ def config(parser):
     config.skipFrames = parser.getint("motion", "skipFrames")
     config.startThreshold = parser.getfloat("motion", "startThreshold")
     config.stopThreshold = parser.getfloat("motion", "stopThreshold")
+    config.historyImage = parser.getboolean("motion", "historyImage")
     # Set contour related data attributes
     config.dilateAmount = parser.getint("motion", "dilateAmount")
     config.erodeAmount = parser.getint("motion", "erodeAmount")
@@ -257,9 +259,21 @@ def main():
         elapsedFrames = 0
         frameTotal = 0
         frameNum = 0
+        fileDir = None
         # Init cascade classifier
         if config.detectType.lower() == "h":
             cascadedet.init(os.path.expanduser(config.cascadeFile))
+        if config.historyImage:
+            # Create black history image
+            historyImg = numpy.zeros((frameResizeHeight, frameResizeWidth), numpy.uint8)
+        # Read ignore mask image if set
+        if config.ignoreMask != "":
+            maskImg = cv2.imread(config.ignoreMask, 0)
+            logger.info("Using ignore mask: %s" % config.ignoreMask)            
+        else:
+            config.ignoreMask = None
+            maskImg = None   
+        movingAvgImg = None
         start = time.time()
         appstart = start
         # Calculate FPS
@@ -298,7 +312,10 @@ def main():
                     else:
                         resizeImg = image
                     # Detect motion
-                    grayImg, motionPercent, movementLocations = motiondet.detect(resizeImg, config.kSize, config.alpha, config.blackThreshold, config.maxChange, config.dilateAmount, config.erodeAmount)
+                    movingAvgImg, grayImg, bwImg, motionPercent, movementLocations = motiondet.detect(movingAvgImg, maskImg, resizeImg, config.kSize, config.alpha, config.blackThreshold, config.maxChange, config.dilateAmount, config.erodeAmount)
+                    if config.historyImage:
+                        # Update history image
+                        historyImg = numpy.bitwise_or(bwImg, historyImg)                    
                     # Threshold to trigger motion
                     if motionPercent > config.startThreshold:
                         if motionPercent >= config.maxChange:
@@ -388,6 +405,10 @@ def main():
             streamSock.close()
         else:
             del videoCapture
+        if config.historyImage and fileDir is not None:
+            # Save history image ready for ignore mask editing
+            logger.info("%s/%s.png" % (fileDir, fileName))
+            cv2.imwrite("%s/%s.png" % (fileDir, fileName), cv2.bitwise_not(historyImg))
 
 if __name__ == '__main__':
     main()

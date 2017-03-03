@@ -13,8 +13,6 @@ sgoldsmith@codeferm.com
 
 import numpy, cv2
 
-movingAvgImg = None
-
 def inside(r, q):
     """See if one rectangle inside another"""
     rx, ry, rw, rh = r
@@ -36,9 +34,8 @@ def contours(image, dilateAmount, erodeAmount):
         movementLocations.append(rect)
     return movementLocations
 
-def detect(image, kSize, alpha, blackThreshold, maxChange, dilateAmount, erodeAmount):
+def detect(movingAvgImg, maskImg, image, kSize, alpha, blackThreshold, maxChange, dilateAmount, erodeAmount):
     """Detect motion"""
-    global movingAvgImg
     movementLocationsFiltered = []
     # Generate work image by blurring
     workImg = cv2.blur(image, kSize)
@@ -52,6 +49,9 @@ def detect(image, kSize, alpha, blackThreshold, maxChange, dilateAmount, erodeAm
     grayImg = cv2.cvtColor(diffImg, cv2.COLOR_BGR2GRAY)
     # Convert to BW
     ret, bwImg = cv2.threshold(grayImg, blackThreshold, 255, cv2.THRESH_BINARY)
+    # Apply ignore mask
+    if maskImg is not None:
+        bwImg = numpy.bitwise_and(bwImg, maskImg)     
     # Total number of changed motion pixels
     height, width, unknown = image.shape
     motionPercent = 100.0 * cv2.countNonZero(bwImg) / (width * height)
@@ -70,4 +70,4 @@ def detect(image, kSize, alpha, blackThreshold, maxChange, dilateAmount, erodeAm
             # Toss rectangles >= maxChange percent of total frame
             if regPercent < maxChange :
                 movementLocationsFiltered.append(r)
-    return grayImg, motionPercent, movementLocationsFiltered
+    return movingAvgImg, grayImg, bwImg, motionPercent, movementLocationsFiltered
