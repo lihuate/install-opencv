@@ -163,54 +163,52 @@ def cascadeDetected(logger, hostName, userName, localFileName, remoteDir, delete
     scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
     logger.info("Cascade detected subprocess submitted")
 
+def config(parser):
+    """Configure from INI file"""
+    # Set camera related data attributes
+    config.cameraName = parser.get("camera", "name")    
+    config.url = parser.get("camera", "url")
+    config.socketTimeout = parser.getint("camera", "socketTimeout")
+    config.resizeWidthDiv = parser.getint("camera", "resizeWidthDiv")
+    config.fpsInterval = parser.getfloat("camera", "fpsInterval")
+    config.fps = parser.getint("camera", "fps")
+    config.fourcc = parser.get("camera", "fourcc")
+    config.recordFileExt = parser.get("camera", "recordFileExt")
+    config.recordDir = parser.get("camera", "recordDir")
+    config.detectType = parser.get("camera", "detectType")
+    config.mark = parser.getboolean("camera", "mark")
+    config.saveFrames = parser.getboolean("camera", "saveFrames")
+    # Set motion related data attributes
+    config.kSize = eval(parser.get("motion", "kSize"), {}, {})
+    config.alpha = parser.getfloat("motion", "alpha")
+    config.blackThreshold = parser.getint("motion", "blackThreshold")
+    config.maxChange = parser.getfloat("motion", "maxChange")
+    config.skipFrames = parser.getint("motion", "skipFrames")
+    config.startThreshold = parser.getfloat("motion", "startThreshold")
+    config.stopThreshold = parser.getfloat("motion", "stopThreshold")
+    # Set contour related data attributes
+    config.dilateAmount = parser.getint("motion", "dilateAmount")
+    config.erodeAmount = parser.getint("motion", "erodeAmount")
+    # Set pedestrian detect related data attributes
+    config.hitThreshold = parser.getfloat("pedestrian", "hitThreshold")
+    config.winStride = eval(parser.get("pedestrian", "winStride"), {}, {})
+    config.padding = eval(parser.get("pedestrian", "padding"), {}, {})
+    config.scale0 = parser.getfloat("pedestrian", "scale0")
+    # Set cascade related data attributes
+    config.cascadeFile = parser.get("cascade", "cascadeFile")
+    config.scaleFactor = parser.getfloat("cascade", "scaleFactor")
+    config.minNeighbors = parser.getint("cascade", "minNeighbors")
+    config.minWidth = parser.getint("cascade", "minWidth")
+    config.minHeight = parser.getint("cascade", "minHeight")
+    # Set SCP related attributes
+    config.hostName = parser.get("scp", "hostName")
+    config.userName = parser.get("scp", "userName")
+    config.remoteDir = parser.get("scp", "remoteDir")
+    config.timeout = parser.getint("scp", "timeout")
+    config.deleteSource = parser.getboolean("scp", "deleteSource")
 
 def main():
     """Main function"""
-    
-    def config():
-        """Config from INI file"""
-        # Set camera related data attributes
-        config.cameraName = parser.get("camera", "name")    
-        config.url = parser.get("camera", "url")
-        config.socketTimeout = parser.getint("camera", "socketTimeout")
-        config.resizeWidthDiv = parser.getint("camera", "resizeWidthDiv")
-        config.fpsInterval = parser.getfloat("camera", "fpsInterval")
-        config.fps = parser.getint("camera", "fps")
-        config.fourcc = parser.get("camera", "fourcc")
-        config.recordFileExt = parser.get("camera", "recordFileExt")
-        config.recordDir = parser.get("camera", "recordDir")
-        config.detectType = parser.get("camera", "detectType")
-        config.mark = parser.getboolean("camera", "mark")
-        config.saveFrames = parser.getboolean("camera", "saveFrames")
-        # Set motion related data attributes
-        config.kSize = eval(parser.get("motion", "kSize"), {}, {})
-        config.alpha = parser.getfloat("motion", "alpha")
-        config.blackThreshold = parser.getint("motion", "blackThreshold")
-        config.maxChange = parser.getfloat("motion", "maxChange")
-        config.skipFrames = parser.getint("motion", "skipFrames")
-        config.startThreshold = parser.getfloat("motion", "startThreshold")
-        config.stopThreshold = parser.getfloat("motion", "stopThreshold")
-        # Set contour related data attributes
-        config.dilateAmount = parser.getint("motion", "dilateAmount")
-        config.erodeAmount = parser.getint("motion", "erodeAmount")
-        # Set pedestrian detect related data attributes
-        config.hitThreshold = parser.getfloat("pedestrian", "hitThreshold")
-        config.winStride = eval(parser.get("pedestrian", "winStride"), {}, {})
-        config.padding = eval(parser.get("pedestrian", "padding"), {}, {})
-        config.scale0 = parser.getfloat("pedestrian", "scale0")
-        # Set cascade related data attributes
-        config.cascadeFile = parser.get("cascade", "cascadeFile")
-        config.scaleFactor = parser.getfloat("cascade", "scaleFactor")
-        config.minNeighbors = parser.getint("cascade", "minNeighbors")
-        config.minWidth = parser.getint("cascade", "minWidth")
-        config.minHeight = parser.getint("cascade", "minHeight")
-        # Set SCP related attributes
-        config.hostName = parser.get("scp", "hostName")
-        config.userName = parser.get("scp", "userName")
-        config.remoteDir = parser.get("scp", "remoteDir")
-        config.timeout = parser.getint("scp", "timeout")
-        config.deleteSource = parser.getboolean("scp", "deleteSource")
-    
     if len(sys.argv) < 2:
         configFileName = "../config/motiondetect.ini"
     else:
@@ -226,7 +224,7 @@ def main():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     # Load values from ini file
-    config()
+    config(parser)
     # Initialize video    
     mjpeg, fps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary = initVideo(config.url, config.fps, config.socketTimeout)
     logger.info("OpenCV %s" % cv2.__version__)
@@ -377,6 +375,7 @@ def main():
                     elif cascadeFound:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/cascade-%s" % (fileDir, fileName))
                         cascadeDetected(logger, config.hostName, config.userName, "%s/cascade-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.deleteSource, config.timeout)
+                    # Rename video to show motion found
                     else:
                         os.rename("%s/%s" % (fileDir, fileName), "%s/motion-%s" % (fileDir, fileName))
                         motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.deleteSource, config.timeout)
