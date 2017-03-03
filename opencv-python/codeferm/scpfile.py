@@ -15,17 +15,21 @@ def copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource,
     # Create remote dir only once
     if curRemoteDir != remoteDir:
         curRemoteDir = remoteDir
+        # Give mkdir time to work
+        beforeScp = "sleep 2; "
         # mkdir on remote host
         command = "ssh %s@%s \"%s\"" % (userName, hostName, "mkdir -p %s" % remoteDir)
         logger.info(" Submitting %s" % command)
         proc = subprocess.Popen([command], shell=True)
         logger.info("Submitted process %d" % proc.pid)
+    else:
+        beforeScp = ""
     # scp file
     if deleteSource:
         deleteCommand = "; rm -f %s" % localFileName
     else:
         deleteCommand = ""
-    command = "scp %s %s@%s:%s/%s%s" % (localFileName, userName, hostName, remoteDir, os.path.basename(localFileName), deleteCommand)
+    command = "%sscp %s %s@%s:%s/%s%s" % (beforeScp, localFileName, userName, hostName, remoteDir, os.path.basename(localFileName), deleteCommand)
     logger.info(" Submitting %s" % command)
     proc = subprocess.Popen([command], shell=True)
     logger.info("Submitted process %d" % proc.pid)
