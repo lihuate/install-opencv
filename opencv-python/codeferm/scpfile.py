@@ -7,6 +7,7 @@ sgoldsmith@codeferm.com
 
 import os, subprocess
 
+# We cache this, so remote dir is created only once
 curRemoteDir = None
 
 def copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
