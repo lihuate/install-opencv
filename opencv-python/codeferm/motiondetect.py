@@ -26,7 +26,7 @@ sys.argv[1] = configuration file name or will default to "motiondetect.ini" if n
 
 """
 
-import ConfigParser, logging, sys, os, time, datetime, numpy, cv2, urlparse, mjpegclient, motiondet, pedestriandet, cascadedet, scpfile
+import ConfigParser, logging, sys, os, time, datetime, threading, numpy, cv2, urlparse, mjpegclient, motiondet, pedestriandet, cascadedet, scpfile
 
 def markRectSize(target, rects, widthMul, heightMul, boxColor, boxThickness):
     """Mark rectangles in image"""
@@ -144,7 +144,8 @@ def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteS
     logger.info("Motion detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
+    thread = threading.Thread(target=scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout))
+    thread.start()
     logger.info("Motion detected subprocess submitted")
 
 def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
@@ -152,7 +153,8 @@ def pedestrianDetected(logger, hostName, userName, localFileName, remoteDir, del
     logger.info("Pedestrian detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
+    thread = threading.Thread(target=scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout))
+    thread.start()
     logger.info("Pedestrian detected subprocess submitted")
 
 def cascadeDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
@@ -160,7 +162,8 @@ def cascadeDetected(logger, hostName, userName, localFileName, remoteDir, delete
     logger.info("Cascade detected subprocess submit")
     return # remove to actually do something
     # SCP video file to central server
-    scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout)
+    thread = threading.Thread(target=scpfile.copyFile(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout))
+    thread.start()
     logger.info("Cascade detected subprocess submitted")
 
 def config(parser):

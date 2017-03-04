@@ -55,6 +55,7 @@ If you plan on processing only video or image files then you can skip this secti
          * `Bus 003 Device 002: ID 1871:0142 Aveo Technology Corp.`
     * `uvcdynctrl -f`
          * `Pixel format: YUYV (YUYV 4:2:2; MIME type: video/x-raw-yuv)`
+    * `v4l2-ctl --list-formats-ext`
 
 ###Download project
 * `sudo apt-get install git-core`
