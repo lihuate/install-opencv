@@ -318,7 +318,7 @@ def main():
                         # Update history image
                         historyImg = numpy.bitwise_or(bwImg, historyImg)                    
                     # Threshold to trigger motion
-                    if motionPercent > config.startThreshold:
+                    if motionPercent > config.startThreshold or (recording and motionPercent >= config.stopThreshold):
                         if motionPercent >= config.maxChange:
                             skipCount = config.skipFrames
                             logger.debug("Maximum motion change: %4.2f" % motionPercent)
