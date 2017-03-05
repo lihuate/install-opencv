@@ -261,7 +261,6 @@ def main():
         frameOk = True
         elapsedFrames = 0
         frameTotal = 0
-        frameNum = 0
         fileDir = None
         # Init cascade classifier
         if config.detectType.lower() == "h":
@@ -289,7 +288,6 @@ def main():
             else:
                 frameOk, image = videoCapture.read()
             if frameOk:
-                frameNum += 1
                 frameTotal += 1
                 # Calc FPS    
                 elapsedFrames += 1
@@ -334,6 +332,7 @@ def main():
                             fileName = "%s.%s" % (now.strftime("%H-%M-%S"), config.recordFileExt)
                             videoWriter = cv2.VideoWriter("%s/%s" % (fileDir, fileName), cv2.VideoWriter_fourcc(config.fourcc[0], config.fourcc[1], config.fourcc[2], config.fourcc[3]), fps, (frameWidth, frameHeight), True)
                             logger.info("Start recording (%4.2f) %s/%s @ %3.1f FPS" % (motionPercent, fileDir, fileName, fps))
+                            recFrameNum = 1
                             peopleFound = False
                             cascadeFound = False
                             recording = True
@@ -351,7 +350,7 @@ def main():
                                 # Save off detected elapsedFrames
                                 if config.saveFrames:
                                     pedDir = "%s/pedestrian-%s" % (fileDir, os.path.splitext(fileName)[0])
-                                    pedName = "%d.jpg" % frameNum
+                                    pedName = "%d.jpg" % recFrameNum
                                     # Save raw JPEG without encoding
                                     if mjpeg:
                                         saveFrame(jpeg, pedDir, pedName)
@@ -369,7 +368,7 @@ def main():
                                     # Save off detected elapsedFrames
                                     if config.saveFrames:
                                         cascadeDir = "%s/cascade-%s" % (fileDir, os.path.splitext(fileName)[0])
-                                        cascadeName = "%d.jpg" % frameNum
+                                        cascadeName = "%d.jpg" % recFrameNum
                                         # Save raw JPEG without encoding
                                         if mjpeg:
                                             saveFrame(jpeg, cascadeDir, cascadeName)
@@ -383,8 +382,13 @@ def main():
                 # Write first image in buffer (the oldest)
                 if frameOk:
                     videoWriter.write(frameBuf[0][0])
+                    recFrameNum += 1
                 # Threshold to stop recording
                 if motionPercent <= config.stopThreshold or not frameOk:
+                    # Write off frame buffer skipping frame already written
+                    logger.info("Writing frame buffer")
+                    for frame in frameBuf[1:]:
+                        videoWriter.write(frame[0])
                     logger.info("Stop recording")
                     del videoWriter
                     # Rename video to show pedestrian found
