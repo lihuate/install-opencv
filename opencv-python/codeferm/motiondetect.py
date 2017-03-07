@@ -5,7 +5,7 @@ Created by Steven P. Goldsmith on February 4, 2017
 sgoldsmith@codeferm.com
 """
 
-"""Motion detector.
+"""Motion detector uses threading where possible to keep consistent FPS.
 
 Resizes frame, sampling and uses moving average to determine change percent. Inner
 rectangles are filtered out as well. This can result in better performance and
@@ -27,6 +27,8 @@ sys.argv[1] = configuration file name or will default to "motiondetect.ini" if n
 """
 
 import ConfigParser, logging, sys, os, time, datetime, threading, numpy, cv2, urlparse, mjpegclient, motiondet, pedestriandet, cascadedet, scpfile
+
+frameOk = True
 
 def markRectSize(target, rects, widthMul, heightMul, boxColor, boxThickness):
     """Mark rectangles in image"""
@@ -105,39 +107,51 @@ def markRoi(target, locList, foundLocsList, widthMul, heightMul, boxColor, boxTh
             cv2.putText(target, label, (x2 + x4, y2 + y4), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), thickness=1, lineType=cv2.LINE_AA)
 
 def saveFrame(frame, saveDir, saveFileName):
-    """Save JPEG frame and convert if needed"""
+    """Save frame"""
     # Create dir if it doesn"t exist
     if not os.path.exists(saveDir):
         os.makedirs(saveDir)
-    if isinstance(frame, numpy.ndarray):
-        cv2.imwrite("%s/%s" % (saveDir, saveFileName), frame)
-    else:
-        writer = open("%s/%s" % (saveDir, saveFileName), "wb")
-        writer.write(frame)
-        writer.close()
+    cv2.imwrite("%s/%s" % (saveDir, saveFileName), frame)
         
-def initVideo(url, fps, socketTimeout):
-    # See if we should use MJPEG client
-    if urlparse.urlparse(url).scheme == "http":
-        # Open MJPEG stream
-        socketFile, streamSock, boundary = mjpegclient.open(url, socketTimeout)
-        # Determine image dimensions
+def initMjpegVideo(url, socketTimeout):
+    """Initialize MJPEG stream"""
+    # Open MJPEG stream
+    socketFile, streamSock, boundary = mjpegclient.open(url, socketTimeout)
+    # Determine image dimensions
+    jpeg, image = mjpegclient.getFrame(socketFile, boundary)
+    frameHeight, frameWidth, unknown = image.shape
+    return frameWidth, frameHeight, socketFile, streamSock, boundary
+
+def initVidCapVideo(url):
+    """Initialize VideoCapture stream"""
+    # Process file or other URL with VideoCapture
+    videoCapture = cv2.VideoCapture(url)
+    frameHeight = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frameWidth = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    fps = int(videoCapture.get(cv2.CAP_PROP_FPS))
+    return frameWidth, frameHeight, videoCapture, fps
+
+def readMjpegFrames(logger, frameBuf, socketFile, boundary):
+    """Read frames and append to buffer"""
+    global frameOk
+    while(frameOk):
+        now = datetime.datetime.now()
         jpeg, image = mjpegclient.getFrame(socketFile, boundary)
-        frameHeight, frameWidth, unknown = image.shape
-        retFps = fps
-        videoCapture = None
-        mjpeg = True
-    else:
-        # Process file or other URL with VideoCapture
-        videoCapture = cv2.VideoCapture(url)
-        frameHeight = int(videoCapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        frameWidth = int(videoCapture.get(cv2.CAP_PROP_FRAME_WIDTH))
-        retFps = int(videoCapture.get(cv2.CAP_PROP_FPS))
-        socketFile = None
-        streamSock = None
-        boundary = None        
-        mjpeg = False
-    return mjpeg, retFps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary
+        frameOk = len(jpeg) > 0
+        # Add new image to end of list
+        frameBuf.append((image, int(time.mktime(now.timetuple()) * 1000000 + now.microsecond)))
+    logger.info("Exiting video stream thread")  
+    
+
+def readVidCapFrames(logger, frameBuf, videoCapture):
+    """Read frames and append to buffer"""
+    global frameOk
+    while(frameOk):
+        now = datetime.datetime.now()
+        frameOk, image = videoCapture.read()
+        # Add new image to end of list
+        frameBuf.append((image, int(time.mktime(now.timetuple()) * 1000000 + now.microsecond)))
+    logger.info("Exiting video stream thread")  
 
 def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
     """Actions to take after motion detected"""
@@ -230,8 +244,14 @@ def main():
     logger.addHandler(handler)
     # Load values from ini file
     config(parser)
-    # Initialize video    
-    mjpeg, fps, frameWidth, frameHeight, videoCapture, socketFile, streamSock, boundary = initVideo(config.url, config.fps, config.socketTimeout)
+    # See if we have MJPEG stream
+    mjpeg = urlparse.urlparse(config.url).scheme == "http"
+    # Initialize video
+    if mjpeg:
+        frameWidth, frameHeight, socketFile, streamSock, boundary = initMjpegVideo(config.url, config.socketTimeout)
+        fps = config.fps
+    else:
+        frameWidth, frameHeight, videoCapture, fps = initVidCapVideo(config.url)
     logger.info("OpenCV %s" % cv2.__version__)
     logger.info("URL: %s, fps: %d" % (config.url, fps))
     logger.info("Resolution: %dx%d" % (frameWidth, frameHeight))
@@ -255,10 +275,8 @@ def main():
         skipCount = 0         
         # Frame buffer, so we can record just before motion starts
         frameBuf = []
-        # Buffer one second of video
-        frameBufSize = fps
         recording = False
-        frameOk = True
+        global frameOk
         elapsedFrames = 0
         frameTotal = 0
         fileDir = None
@@ -276,115 +294,109 @@ def main():
             config.ignoreMask = None
             maskImg = None   
         movingAvgImg = None
+        # Kick off video stream thread
+        if mjpeg:
+            thread = threading.Thread(target=readMjpegFrames, args=(logger, frameBuf, socketFile, boundary,))
+        else:
+            thread = threading.Thread(target=readVidCapFrames, args=(logger, frameBuf, videoCapture,))
+        thread.start()
+        # Wait until buffer is full
+        while(frameOk and len(frameBuf) < fps):
+            # 1/4 of FPS sleep
+            time.sleep(1.0 / (fps * 4))              
         start = time.time()
         appstart = start
-        # Calculate FPS
-        while(frameOk):
+        # Loop as long as there are frames in the buffer
+        while(len(frameBuf) > 0):
             # Used for timestamp in frame buffer and filename
             now = datetime.datetime.now()
-            # Use custom client for MJPEG
-            if mjpeg:
-                jpeg, image = mjpegclient.getFrame(socketFile, boundary)
-            else:
-                frameOk, image = videoCapture.read()
-            if frameOk:
-                frameTotal += 1
-                # Calc FPS    
-                elapsedFrames += 1
-                curTime = time.time()
-                elapse = curTime - start
-                # Log FPS
-                if elapse >= config.fpsInterval:
-                    start = curTime
-                    logger.debug("%3.1f FPS" % (elapsedFrames / elapse))
-                    elapsedFrames = 0                
-                # Buffer image
-                if len(frameBuf) == frameBufSize:
-                    # Toss first image in list (oldest)
-                    frameBuf.pop(0)
-                # Add new image to end of list
-                frameBuf.append((image, int(time.mktime(now.timetuple()) * 1000000 + now.microsecond)))            
-                # Skip elapsedFrames until skip count <= 0
-                if skipCount <= 0:
-                    skipCount = frameToCheck
-                    # Resize image if not the same size as the original
-                    if frameResizeWidth != frameWidth:
-                        resizeImg = cv2.resize(image, (frameResizeWidth, frameResizeHeight), interpolation=cv2.INTER_NEAREST)
-                    else:
-                        resizeImg = image
-                    # Detect motion
-                    movingAvgImg, grayImg, bwImg, motionPercent, movementLocations = motiondet.detect(movingAvgImg, maskImg, resizeImg, config.kSize, config.alpha, config.blackThreshold, config.maxChange, config.dilateAmount, config.erodeAmount)
-                    if config.historyImage:
-                        # Update history image
-                        historyImg = numpy.bitwise_or(bwImg, historyImg)                    
-                    # Threshold to trigger motion
-                    if motionPercent > config.startThreshold or (recording and motionPercent >= config.stopThreshold):
-                        if motionPercent >= config.maxChange:
-                            skipCount = config.skipFrames
-                            logger.debug("Maximum motion change: %4.2f" % motionPercent)
-                        if not recording:
-                            # Construct directory name from camera name, recordDir and date
-                            dateStr = now.strftime("%Y-%m-%d")
-                            fileDir = "%s/%s/%s" % (os.path.expanduser(config.recordDir), config.cameraName, dateStr)
-                            # Create dir if it doesn"t exist
-                            if not os.path.exists(fileDir):
-                                os.makedirs(fileDir)
-                            fileName = "%s.%s" % (now.strftime("%H-%M-%S"), config.recordFileExt)
-                            videoWriter = cv2.VideoWriter("%s/%s" % (fileDir, fileName), cv2.VideoWriter_fourcc(config.fourcc[0], config.fourcc[1], config.fourcc[2], config.fourcc[3]), fps, (frameWidth, frameHeight), True)
-                            logger.info("Start recording (%4.2f) %s/%s @ %3.1f FPS" % (motionPercent, fileDir, fileName, fps))
-                            recFrameNum = 1
-                            peopleFound = False
-                            cascadeFound = False
-                            recording = True
-                        if config.mark:
-                            # Draw rectangle around found objects
-                            markRectSize(image, movementLocations, widthMultiplier, heightMultiplier, (0, 255, 0), 2)
-                        # Detect pedestrians ?
-                        if config.detectType.lower() == "p":
-                            locationsList, foundLocationsList, foundWeightsList = pedestriandet.detect(movementLocations, resizeImg, config.winStride, config.padding, config.scale0)
-                            if len(foundLocationsList) > 0:
-                                peopleFound = True
-                                if config.mark:
-                                    # Draw rectangle around found objects
-                                    markRectWeight(image, locationsList, foundLocationsList, foundWeightsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
+            # Wait for frame until buffer is full
+            while(frameOk and len(frameBuf) < fps):
+                # 1/4 of FPS sleep
+                time.sleep(1.0 / (fps * 4))
+            # Get oldest frame from buffer
+            frame = frameBuf[0][0]
+            # Toss off the list
+            frameBuf.pop(0)
+            frameTotal += 1
+            # Calc FPS    
+            elapsedFrames += 1
+            curTime = time.time()
+            elapse = curTime - start
+            # Log FPS
+            if elapse >= config.fpsInterval:
+                start = curTime
+                logger.debug("%3.1f FPS" % (elapsedFrames / elapse))
+                elapsedFrames = 0
+            # Skip elapsedFrames until skip count <= 0
+            if skipCount <= 0:
+                skipCount = frameToCheck
+                # Resize image if not the same size as the original
+                if frameResizeWidth != frameWidth:
+                    resizeImg = cv2.resize(frame, (frameResizeWidth, frameResizeHeight), interpolation=cv2.INTER_NEAREST)
+                else:
+                    resizeImg = frame
+                # Detect motion
+                movingAvgImg, grayImg, bwImg, motionPercent, movementLocations = motiondet.detect(movingAvgImg, maskImg, resizeImg, config.kSize, config.alpha, config.blackThreshold, config.maxChange, config.dilateAmount, config.erodeAmount)
+                if config.historyImage:
+                    # Update history image
+                    historyImg = numpy.bitwise_or(bwImg, historyImg)                    
+                # Threshold to trigger motion
+                if motionPercent > config.startThreshold or (recording and motionPercent >= config.stopThreshold):
+                    if motionPercent >= config.maxChange:
+                        skipCount = config.skipFrames
+                        logger.debug("Maximum motion change: %4.2f" % motionPercent)
+                    if not recording:
+                        # Construct directory name from camera name, recordDir and date
+                        dateStr = now.strftime("%Y-%m-%d")
+                        fileDir = "%s/%s/%s" % (os.path.expanduser(config.recordDir), config.cameraName, dateStr)
+                        # Create dir if it doesn"t exist
+                        if not os.path.exists(fileDir):
+                            os.makedirs(fileDir)
+                        fileName = "%s.%s" % (now.strftime("%H-%M-%S"), config.recordFileExt)
+                        videoWriter = cv2.VideoWriter("%s/%s" % (fileDir, fileName), cv2.VideoWriter_fourcc(config.fourcc[0], config.fourcc[1], config.fourcc[2], config.fourcc[3]), fps, (frameWidth, frameHeight), True)
+                        logger.info("Start recording (%4.2f) %s/%s @ %3.1f FPS" % (motionPercent, fileDir, fileName, fps))
+                        recFrameNum = 1
+                        peopleFound = False
+                        cascadeFound = False
+                        recording = True
+                    if config.mark:
+                        # Draw rectangle around found objects
+                        markRectSize(frame, movementLocations, widthMultiplier, heightMultiplier, (0, 255, 0), 2)
+                    # Detect pedestrians ?
+                    if config.detectType.lower() == "p":
+                        locationsList, foundLocationsList, foundWeightsList = pedestriandet.detect(movementLocations, resizeImg, config.winStride, config.padding, config.scale0)
+                        if len(foundLocationsList) > 0:
+                            peopleFound = True
+                            if config.mark:
+                                # Draw rectangle around found objects
+                                markRectWeight(frame, locationsList, foundLocationsList, foundWeightsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
+                            # Save off detected elapsedFrames
+                            if config.saveFrames:
+                                saveFrame(frame, "%s/pedestrian-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum)
+                            logger.debug("Pedestrian detected locations: %s" % foundLocationsList)
+                    # Haar Cascade detection?
+                    elif config.detectType.lower() == "h":
+                        locationsList, foundLocationsList = cascadedet.detect(movementLocations, grayImg, config.scaleFactor, config.minNeighbors, config.minWidth, config.minHeight)
+                        if len(foundLocationsList) > 0:
+                            cascadeFound = True
+                            if config.mark:
+                                # Draw rectangle around found objects
+                                markRoi(frame, locationsList, foundLocationsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
                                 # Save off detected elapsedFrames
                                 if config.saveFrames:
-                                    pedDir = "%s/pedestrian-%s" % (fileDir, os.path.splitext(fileName)[0])
-                                    pedName = "%d.jpg" % recFrameNum
-                                    # Save raw JPEG without encoding
-                                    if mjpeg:
-                                        saveFrame(jpeg, pedDir, pedName)
-                                    else:
-                                        saveFrame(image, pedDir, pedName)
-                                logger.debug("Pedestrian detected locations: %s" % foundLocationsList)
-                        # Haar Cascade detection?
-                        elif config.detectType.lower() == "h":
-                            locationsList, foundLocationsList = cascadedet.detect(movementLocations, grayImg, config.scaleFactor, config.minNeighbors, config.minWidth, config.minHeight)
-                            if len(foundLocationsList) > 0:
-                                cascadeFound = True
-                                if config.mark:
-                                    # Draw rectangle around found objects
-                                    markRoi(image, locationsList, foundLocationsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
-                                    # Save off detected elapsedFrames
-                                    if config.saveFrames:
-                                        cascadeDir = "%s/cascade-%s" % (fileDir, os.path.splitext(fileName)[0])
-                                        cascadeName = "%d.jpg" % recFrameNum
-                                        # Save raw JPEG without encoding
-                                        if mjpeg:
-                                            saveFrame(jpeg, cascadeDir, cascadeName)
-                                        else:
-                                            saveFrame(image, cascadeDir, cascadeName)
-                                logger.debug("Cascade detected locations: %s" % foundLocationsList)
-                else:
-                    skipCount -= 1
+                                    saveFrame(frame, "%s/cascade-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum)
+                            logger.debug("Cascade detected locations: %s" % foundLocationsList)
+            else:
+                skipCount -= 1
             # If recording write frame and check motion percent
             if recording:
-                # Write first image in buffer (the oldest)
-                if frameOk:
-                    videoWriter.write(frameBuf[0][0])
-                    recFrameNum += 1
+                if len(frameBuf) > 0:
+                    # Write first image in buffer (the oldest)
+                    videoWriter.write(frame)
+                recFrameNum += 1
                 # Threshold to stop recording
-                if motionPercent <= config.stopThreshold or not frameOk:
+                if motionPercent <= config.stopThreshold or len(frameBuf) == 0:
                     # Write off frame buffer skipping frame already written
                     logger.info("Writing frame buffer")
                     for frame in frameBuf[1:]:
@@ -405,7 +417,9 @@ def main():
                         motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.deleteSource, config.timeout)
                     recording = False
         elapsed = time.time() - appstart
-        logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds" % (frameTotal / elapsed, elapsed))        
+        logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds" % (frameTotal / elapsed, elapsed))
+        # Exit video streaming thread
+        exitLoop = True
         # Clean up
         if mjpeg:
             socketFile.close()
