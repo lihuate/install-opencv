@@ -273,8 +273,10 @@ def main():
         if frameToCheck < 1:
             frameToCheck = 0
         skipCount = 0         
-        # Frame buffer, so we can record just before motion starts
+        # Frame buffer
         frameBuf = []
+        # History buffer to capture just before motion
+        historyBuf = []
         recording = False
         global frameOk
         elapsedFrames = 0
@@ -310,12 +312,17 @@ def main():
         while(len(frameBuf) > 0):
             # Used for timestamp in frame buffer and filename
             now = datetime.datetime.now()
-            # Wait for frame until buffer is full
+            # Wait until frame buffer is full
             while(frameOk and len(frameBuf) < fps):
                 # 1/4 of FPS sleep
                 time.sleep(1.0 / (fps * 4))
-            # Get oldest frame from buffer
+            # Get oldest frame
             frame = frameBuf[0][0]
+            # Buffer oldest frame
+            historyBuf.append(frameBuf[0])
+            # Toss oldest frame
+            if len(historyBuf) > fps:
+                historyBuf.pop(0)
             # Toss off the list
             frameBuf.pop(0)
             frameTotal += 1
@@ -392,15 +399,15 @@ def main():
             # If recording write frame and check motion percent
             if recording:
                 if len(frameBuf) > 0:
-                    # Write first image in buffer (the oldest)
-                    videoWriter.write(frame)
+                    # Write first image in history buffer (the oldest)
+                    videoWriter.write(historyBuf[0][0])
                 recFrameNum += 1
                 # Threshold to stop recording
                 if motionPercent <= config.stopThreshold or len(frameBuf) == 0:
                     # Write off frame buffer skipping frame already written
-                    logger.info("Writing frame buffer")
-                    for frame in frameBuf[1:]:
-                        videoWriter.write(frame[0])
+                    logger.info("Writing history frame buffer")
+                    for f in frameBuf[1:]:
+                        videoWriter.write(f[0])
                     logger.info("Stop recording")
                     del videoWriter
                     # Rename video to show pedestrian found
@@ -417,7 +424,7 @@ def main():
                         motionDetected(logger, config.hostName, config.userName, "%s/motion-%s" % (fileDir, fileName), "%s/%s" % (config.remoteDir, dateStr), config.deleteSource, config.timeout)
                     recording = False
         elapsed = time.time() - appstart
-        logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds" % (frameTotal / elapsed, elapsed))
+        logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds, frame total: %s" % (frameTotal / elapsed, elapsed, frameTotal))
         # Exit video streaming thread
         exitLoop = True
         # Clean up
