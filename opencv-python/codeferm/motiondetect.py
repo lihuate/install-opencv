@@ -406,7 +406,7 @@ def main():
                 if motionPercent <= config.stopThreshold or len(frameBuf) == 0:
                     # Write off frame buffer skipping frame already written
                     logger.info("Writing history frame buffer")
-                    for f in frameBuf[1:]:
+                    for f in historyBuf[1:]:
                         videoWriter.write(f[0])
                     logger.info("Stop recording")
                     del videoWriter
