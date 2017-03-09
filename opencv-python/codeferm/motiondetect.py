@@ -380,7 +380,8 @@ def main():
                                 markRectWeight(frame, locationsList, foundLocationsList, foundWeightsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
                             # Save off detected elapsedFrames
                             if config.saveFrames:
-                                saveFrame(frame, "%s/pedestrian-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum)
+                                thread = threading.Thread(target=saveFrame, args=(frame, "%s/pedestrian-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum,))
+                                thread.start()
                             logger.debug("Pedestrian detected locations: %s" % foundLocationsList)
                     # Haar Cascade detection?
                     elif config.detectType.lower() == "h":
@@ -392,20 +393,21 @@ def main():
                                 markRoi(frame, locationsList, foundLocationsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
                                 # Save off detected elapsedFrames
                                 if config.saveFrames:
-                                    saveFrame(frame, "%s/cascade-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum)
+                                    thread = threading.Thread(target=saveFrame, args=(frame, "%s/cascade-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum,))
+                                    thread.start()
                             logger.debug("Cascade detected locations: %s" % foundLocationsList)
             else:
                 skipCount -= 1
             # If recording write frame and check motion percent
             if recording:
-                if len(frameBuf) > 0:
+                if len(historyBuf) > 0:
                     # Write first image in history buffer (the oldest)
                     videoWriter.write(historyBuf[0][0])
                 recFrameNum += 1
-                # Threshold to stop recording
+                # Threshold to stop recording or empty frame buffer
                 if motionPercent <= config.stopThreshold or len(frameBuf) == 0:
                     # Write off frame buffer skipping frame already written
-                    logger.info("Writing history frame buffer")
+                    logger.info("Writing %d frames of history buffer" % len(frameBuf))
                     for f in historyBuf[1:]:
                         videoWriter.write(f[0])
                     logger.info("Stop recording")
