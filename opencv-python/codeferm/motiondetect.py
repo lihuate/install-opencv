@@ -139,7 +139,7 @@ def readMjpegFrames(logger, frameBuf, socketFile, boundary):
         jpeg, image = mjpegclient.getFrame(socketFile, boundary)
         frameOk = len(jpeg) > 0
         # Add new image to end of list
-        frameBuf.append((image, int(time.mktime(now.timetuple()) * 1000000 + now.microsecond)))
+        frameBuf.append((image, now))
     logger.info("Exiting video stream thread")  
     
 
@@ -150,7 +150,7 @@ def readVidCapFrames(logger, frameBuf, videoCapture):
         now = datetime.datetime.now()
         frameOk, image = videoCapture.read()
         # Add new image to end of list
-        frameBuf.append((image, int(time.mktime(now.timetuple()) * 1000000 + now.microsecond)))
+        frameBuf.append((image, now))
     logger.info("Exiting video stream thread")  
 
 def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
@@ -310,14 +310,14 @@ def main():
         appstart = start
         # Loop as long as there are frames in the buffer
         while(len(frameBuf) > 0):
-            # Used for timestamp in frame buffer and filename
-            now = datetime.datetime.now()
             # Wait until frame buffer is full
             while(frameOk and len(frameBuf) < fps):
                 # 1/4 of FPS sleep
                 time.sleep(1.0 / (fps * 4))
             # Get oldest frame
             frame = frameBuf[0][0]
+            # Used for timestamp in frame buffer and filename
+            now = frameBuf[0][1]
             # Buffer oldest frame
             historyBuf.append(frameBuf[0])
             # Toss oldest frame
@@ -403,7 +403,7 @@ def main():
                 if len(historyBuf) > 0:
                     # Write first image in history buffer (the oldest)
                     videoWriter.write(historyBuf[0][0])
-                recFrameNum += 1
+                    recFrameNum += 1
                 # Threshold to stop recording or empty frame buffer
                 if motionPercent <= config.stopThreshold or len(frameBuf) == 0:
                     # Write off frame buffer skipping frame already written
