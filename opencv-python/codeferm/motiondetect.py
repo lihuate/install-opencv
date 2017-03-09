@@ -131,26 +131,34 @@ def initVidCapVideo(url):
     fps = int(videoCapture.get(cv2.CAP_PROP_FPS))
     return frameWidth, frameHeight, videoCapture, fps
 
-def readMjpegFrames(logger, frameBuf, socketFile, boundary):
+def readMjpegFrames(logger, frameBuf, frameBufMax, socketFile, boundary):
     """Read frames and append to buffer"""
     global frameOk
     while(frameOk):
         now = datetime.datetime.now()
         jpeg, image = mjpegclient.getFrame(socketFile, boundary)
         frameOk = len(jpeg) > 0
-        # Add new image to end of list
-        frameBuf.append((image, now))
+        if frameOk:
+            # Make sure we do not run out of memory
+            if len(frameBuf) > frameBufMax:
+                frameBuf.pop(0)
+            # Add new image to end of list
+            frameBuf.append((image, now))
     logger.info("Exiting video stream thread")  
     
 
-def readVidCapFrames(logger, frameBuf, videoCapture):
+def readVidCapFrames(logger, frameBuf, frameBufMax, videoCapture):
     """Read frames and append to buffer"""
     global frameOk
     while(frameOk):
         now = datetime.datetime.now()
         frameOk, image = videoCapture.read()
-        # Add new image to end of list
-        frameBuf.append((image, now))
+        if frameOk:
+            # Make sure we do not run out of memory
+            if len(frameBuf) > frameBufMax:
+                frameBuf.pop(0)
+            # Add new image to end of list
+            frameBuf.append((image, now))
     logger.info("Exiting video stream thread")  
 
 def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
@@ -189,6 +197,7 @@ def config(parser):
     config.resizeWidthDiv = parser.getint("camera", "resizeWidthDiv")
     config.fpsInterval = parser.getfloat("camera", "fpsInterval")
     config.fps = parser.getint("camera", "fps")
+    config.frameBufMax = parser.getint("camera", "frameBufMax")
     config.fourcc = parser.get("camera", "fourcc")
     config.recordFileExt = parser.get("camera", "recordFileExt")
     config.recordDir = parser.get("camera", "recordDir")
@@ -298,9 +307,9 @@ def main():
         movingAvgImg = None
         # Kick off video stream thread
         if mjpeg:
-            thread = threading.Thread(target=readMjpegFrames, args=(logger, frameBuf, socketFile, boundary,))
+            thread = threading.Thread(target=readMjpegFrames, args=(logger, frameBuf, config.frameBufMax, socketFile, boundary,))
         else:
-            thread = threading.Thread(target=readVidCapFrames, args=(logger, frameBuf, videoCapture,))
+            thread = threading.Thread(target=readVidCapFrames, args=(logger, frameBuf, config.frameBufMax, videoCapture,))
         thread.start()
         # Wait until buffer is full
         while(frameOk and len(frameBuf) < fps):
@@ -333,7 +342,7 @@ def main():
             # Log FPS
             if elapse >= config.fpsInterval:
                 start = curTime
-                logger.debug("%3.1f FPS" % (elapsedFrames / elapse))
+                logger.debug("%3.1f FPS, frame buffer size: %d" % (elapsedFrames / elapse, len(frameBuf)))
                 elapsedFrames = 0
             # Skip elapsedFrames until skip count <= 0
             if skipCount <= 0:
@@ -428,7 +437,7 @@ def main():
         elapsed = time.time() - appstart
         logger.info("Calculated %4.1f FPS, elapsed time: %4.2f seconds, frame total: %s" % (frameTotal / elapsed, elapsed, frameTotal))
         # Exit video streaming thread
-        exitLoop = True
+        frameOk = False
         # Clean up
         if mjpeg:
             socketFile.close()
