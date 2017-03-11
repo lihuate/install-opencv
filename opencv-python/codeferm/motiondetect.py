@@ -141,7 +141,7 @@ def readMjpegFrames(logger, frameBuf, frameBufMax, socketFile, boundary):
         if frameOk:
             # Make sure we do not run out of memory
             if len(frameBuf) > frameBufMax:
-                logger.error("Frame buffer exceeded:" % frameBufMax)
+                logger.error("Frame buffer exceeded: %d" % frameBufMax)
                 frameOk = False
             else:
                 # Add new image to end of list
@@ -158,7 +158,7 @@ def readVidCapFrames(logger, frameBuf, frameBufMax, videoCapture):
         if frameOk:
             # Make sure we do not run out of memory
             if len(frameBuf) > frameBufMax:
-                logger.error("Frame buffer exceeded:" % frameBufMax)
+                logger.error("Frame buffer exceeded: %d" % frameBufMax)
                 frameOk = False
             else:
                 # Add new image to end of list
