@@ -137,14 +137,15 @@ def readMjpegFrames(logger, frameBuf, frameBufMax, socketFile, boundary):
     while(frameOk):
         now = datetime.datetime.now()
         jpeg, image = mjpegclient.getFrame(socketFile, boundary)
-        height, width, channels = image.shape
-        frameOk = len(jpeg) > 0 and height > 0 and width > 0
+        frameOk = len(jpeg) > 0
         if frameOk:
             # Make sure we do not run out of memory
             if len(frameBuf) > frameBufMax:
-                frameBuf.pop(0)
-            # Add new image to end of list
-            frameBuf.append((image, now))
+                logger.error("Frame buffer exceeded:" % frameBufMax)
+                frameOk = False
+            else:
+                # Add new image to end of list
+                frameBuf.append((image, now))
     logger.info("Exiting video stream thread")  
     
 
@@ -157,9 +158,11 @@ def readVidCapFrames(logger, frameBuf, frameBufMax, videoCapture):
         if frameOk:
             # Make sure we do not run out of memory
             if len(frameBuf) > frameBufMax:
-                frameBuf.pop(0)
-            # Add new image to end of list
-            frameBuf.append((image, now))
+                logger.error("Frame buffer exceeded:" % frameBufMax)
+                frameOk = False
+            else:
+                # Add new image to end of list
+                frameBuf.append((image, now))
     logger.info("Exiting video stream thread")  
 
 def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
@@ -330,10 +333,10 @@ def main():
             now = frameBuf[0][1]
             # Buffer oldest frame
             historyBuf.append(frameBuf[0])
-            # Toss oldest frame
+            # Toss oldest history frame
             if len(historyBuf) > fps:
                 historyBuf.pop(0)
-            # Toss off the list
+            # Toss oldest frame
             frameBuf.pop(0)
             frameTotal += 1
             # Calc FPS    
