@@ -119,7 +119,7 @@ def initMjpegVideo(url, socketTimeout):
     socketFile, streamSock, boundary = mjpegclient.open(url, socketTimeout)
     # Determine image dimensions
     jpeg, image = mjpegclient.getFrame(socketFile, boundary)
-    frameHeight, frameWidth, unknown = image.shape
+    frameHeight, frameWidth, channels = image.shape
     return frameWidth, frameHeight, socketFile, streamSock, boundary
 
 def initVidCapVideo(url):
@@ -137,7 +137,8 @@ def readMjpegFrames(logger, frameBuf, frameBufMax, socketFile, boundary):
     while(frameOk):
         now = datetime.datetime.now()
         jpeg, image = mjpegclient.getFrame(socketFile, boundary)
-        frameOk = len(jpeg) > 0
+        height, width, channels = image.shape
+        frameOk = len(jpeg) > 0 and height > 0 and width > 0
         if frameOk:
             # Make sure we do not run out of memory
             if len(frameBuf) > frameBufMax:
