@@ -25,7 +25,7 @@ You have to optimize extensively on platforms with an incompatible VPU/GPU such 
 * [References](#references)
 * [FreeBSD License](#freebsd-license)
 
-###Provides
+### Provides
 * Latest Oracle JDK 8 and Apache Ant
     * FourCC class
     * CaptureUI Applet to view images/video since there's no imshow with the bindings
@@ -42,7 +42,7 @@ You have to optimize extensively on platforms with an incompatible VPU/GPU such 
     * Camera Calibration
     * Drawing
 
-###Test Camera
+### Test Camera
 If you plan on processing only video or image files then you can skip this section. Live video will allow you to create smart camera applications that react to a live video stream (versus a streaming only camera). You will need to select a USB camera that works under [Linux](http://elinux.org/RPi_USB_Webcams) and has the proper resolution.
 * Add user to video group
     * `sudo usermod -a -G video username`
@@ -57,7 +57,7 @@ If you plan on processing only video or image files then you can skip this secti
          * `Pixel format: YUYV (YUYV 4:2:2; MIME type: video/x-raw-yuv)`
     * `v4l2-ctl --list-formats-ext`
 
-###Download project
+### Download project
 * `sudo apt-get install git-core`
 * `cd ~/`
 * `git clone --depth 1 https://github.com/sgjava/install-opencv.git`
@@ -69,7 +69,7 @@ with an out of memory exception. To create a 1GB swap file use:
     * `swapon tmpswap`
     * `free`
 
-###Install The Whole Enchilada
+### Install The Whole Enchilada
 This is probably the easiest way to install everything, but you can follow the individual steps below to build or rebuild individual components. There are values you can change in the individual scripts, so read them over. Skip the rest of the individual scripts below if you run this.
 * `cd ~/install-opencv/scripts`
 * Edit `config.sh` and make changes as needed
@@ -82,16 +82,16 @@ This is probably the easiest way to install everything, but you can follow the i
 * `java -version`
 * `ant -version`
 
-###Install libjpeg-turbo
+### Install libjpeg-turbo
 Patches jdhuff.c to remove "Invalid SOS parameters for sequential JPEG" warning and jdmarker.c to remove "Corrupt JPEG data: xx extraneous bytes before marker 0xd9" warning. These will fill up the logs if not muted.
 * `cd ~/install-opencv/scripts`
 * `sudo nohup ./install-libjpeg-turbo.sh &`
     * Use `top` to monitor until build completes
 
-###Install mjpg-streamer
+### Install mjpg-streamer
 Sometimes all you need is a live video feed without further processing. This section will be what you are looking for. It also makes sense to move the UVC processing into a different Linux process or thread from the main CV code.
 
-####WARNING
+#### WARNING
 I'm running this on a test LAN and not securing mjpg-streamer. In production you will want to use a user and password with mjpg-streamer. You will also want to put it behind a secure proxy if you are accessing it from the Internet.
 
 Change `whitepatch` in `install-mjpg-streamer.sh` to `True` if you get a white image. I had to set this to True for using MPJEG mode. In YUYV I set it to `False`. The default setting is `True`.
@@ -107,17 +107,17 @@ Change `whitepatch` in `install-mjpg-streamer.sh` to `True` if you get a white i
     * `mjpg_streamer -i "/usr/local/lib/input_uvc.so" -o "/usr/local/lib/output_http.so -w /usr/local/www"`
 * In your web browser or VLC player go to `http://yourhost:8080/?action=stream` and you should see the video stream.
 
-###Install OpenCV
+### Install OpenCV
 I have included a Java patch that is disabled by default. The patch will fix memory leaks and performance issues with Java. See [OpenCV Java memory management](https://github.com/sgjava/opencvmem) for details.
 * `cd ~/install-opencv/scripts`
 * `sudo rm nohup.out`
 * `sudo nohup ./install-opencv.sh &`
     * Use `top` to monitor until build completes
 
-###Motion Detection
+### Motion Detection
 This is a good first example into the foray that is Computer Vision. This is also a practical example that you can use as the basis for other CV projects. From experience I can tell you that you need to understand the usage scenario. Simple motion detection will work well with static backgrounds, but using it outside you have to deal with cars, tree branches blowing, sudden light changes, etc. This is why built in motion detection is mostly useless on security cameras for these types of scenarios. You can use ignore bitmaps and ROI (regions of interest) to improve results with dynamic backgrounds. For instance, I can ignore my palm tree, but trigger motion if you walk in my doorway.
 
-####Boosting Performance
+#### Boosting Performance
 I see a lot of posts on the Internet about OpenCV performance on various ARM based SBCs being CPU intensive or slow frame capture, etc. Over time I learned the tricks of the trade and kicked it up a few notches from my own research. These techniques may not work for all usage scenarios or OpenCV functions, but they do work well for security type applications.
 
 Problem: Slow or inconsistent FPS using USB camera.
@@ -230,13 +230,13 @@ int main() {
 
 ![C++ Example](images/example-cpp.png)
 
-###References
+### References
 * [openCV 3.1.0 optimized for Raspberry Pi, with libjpeg-turbo 1.5.0 and NEON SIMD support](http://hopkinsdev.blogspot.com/2016/06/opencv-310-optimized-for-raspberry-pi.html)
 * [script for easy build opencv for raspberry pi 2/3, beaglebone, cubietruck, banana pi and odroid c2 ](https://gist.github.com/lhelontra/e4357758e4d533bd415678bf11942c0a)
 * [conflicting switches: -march=armv7-a -mcpu=cortex-a8 ](https://bugs.launchpad.net/gcc-linaro/+bug/662720)
 * [How to build libjpeg-turbo with Neon(SIMP) on odroid with linux environment](http://stackoverflow.com/questions/41979004/how-to-build-libjpeg-turbo-with-neonsimp-on-odroid-with-linux-environment)
 
-###FreeBSD License
+### FreeBSD License
 Copyright (c) Steven P. Goldsmith
 
 All rights reserved.
