@@ -136,8 +136,12 @@ def readMjpegFrames(logger, frameBuf, frameBufMax, socketFile, boundary):
     global frameOk
     while(frameOk):
         now = datetime.datetime.now()
-        jpeg, image = mjpegclient.getFrame(socketFile, boundary)
-        frameOk = len(jpeg) > 0
+        # Make sure thread doesn't hang in case of socket time out, etc.
+        try:
+            jpeg, image = mjpegclient.getFrame(socketFile, boundary)
+            frameOk = len(jpeg) > 0
+        except:
+            frameOk = False
         if frameOk:
             # Make sure we do not run out of memory
             if len(frameBuf) > frameBufMax:
