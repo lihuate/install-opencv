@@ -156,7 +156,10 @@ def readMjpegFrames(logger, frameBuf, frameBufMax, socketFile, boundary):
 def readVidCapFrames(logger, frameBuf, frameBufMax, videoCapture):
     """Read frames and append to buffer"""
     global frameOk
+    fps = videoCapture.get(cv2.CAP_PROP_FPS)
+    fpsTime = 1 / fps
     while(frameOk):
+        start = time.time()
         now = datetime.datetime.now()
         frameOk, image = videoCapture.read()
         if frameOk:
@@ -167,6 +170,11 @@ def readVidCapFrames(logger, frameBuf, frameBufMax, videoCapture):
             else:
                 # Add new image to end of list
                 frameBuf.append((image, now))
+            curTime = time.time()
+            elapsed = curTime - start
+            # Try to keep FPS for files consistent otherwise frameBufMax will be reached
+            if elapsed < fpsTime:
+                time.sleep(fpsTime - elapsed)
     logger.info("Exiting video stream thread")  
 
 def motionDetected(logger, hostName, userName, localFileName, remoteDir, deleteSource, timeout):
