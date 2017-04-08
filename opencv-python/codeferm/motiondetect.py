@@ -52,6 +52,25 @@ def markRectSize(target, rects, widthMul, heightMul, boxColor, boxThickness):
             y2 = y2 - 2
         # Show width and height of full size image
         cv2.putText(target, label, (x2, y2), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), thickness=1, lineType=cv2.LINE_AA)
+        
+def filterByWeight(foundLocsList, foundWghtsList, minWeight):
+    """Filter out found locations by weight"""
+    filteredFoundLocations = []
+    filteredFoundWeights = []
+    for foundWeights, foundLocations in zip(foundWghtsList, foundLocsList):
+        filteredLocations = []
+        filteredWeights = []
+        i = 0
+        # Filter by weight
+        for w in foundWeights:
+            if w >= minWeight:
+                filteredLocations.append(foundLocations[i])
+                filteredWeights.append(w)
+            i += 1
+        if len(filteredLocations) > 0:
+            filteredFoundLocations.append(filteredLocations)
+            filteredFoundWeights.append(filteredWeights)
+    return filteredFoundLocations, filteredFoundWeights
 
 def markRectWeight(target, locList, foundLocsList, foundWghtsList, widthMul, heightMul, boxColor, boxThickness):
     """Mark ROI rectangles with weight in image"""
@@ -238,6 +257,7 @@ def config(parser):
     config.winStride = eval(parser.get("pedestrian", "winStride"), {}, {})
     config.padding = eval(parser.get("pedestrian", "padding"), {}, {})
     config.scale0 = parser.getfloat("pedestrian", "scale0")
+    config.minWeight = parser.getfloat("pedestrian", "minWeight")
     # Set cascade related data attributes
     config.cascadeFile = parser.get("cascade", "cascadeFile")
     config.scaleFactor = parser.getfloat("cascade", "scaleFactor")
@@ -399,15 +419,21 @@ def main():
                     if config.detectType.lower() == "p":
                         locationsList, foundLocationsList, foundWeightsList = pedestriandet.detect(movementLocations, resizeImg, config.winStride, config.padding, config.scale0)
                         if len(foundLocationsList) > 0:
-                            peopleFound = True
-                            if config.mark:
-                                # Draw rectangle around found objects
-                                markRectWeight(frame, locationsList, foundLocationsList, foundWeightsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
-                            # Save off detected elapsedFrames
-                            if config.saveFrames:
-                                thread = threading.Thread(target=saveFrame, args=(frame, "%s/pedestrian-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum,))
-                                thread.start()
-                            logger.debug("Pedestrian detected locations: %s" % foundLocationsList)
+                            # Only filter if minWeight > 0.0
+                            if config.minWeight > 0.0:
+                                # Filter found location by weight
+                                foundLocationsList, foundWeightsList = filterByWeight(foundLocationsList, foundWeightsList, config.minWeight)
+                            # Any hits after possible filtering?
+                            if len(foundLocationsList) > 0:
+                                peopleFound = True
+                                if config.mark:
+                                    # Draw rectangle around found objects
+                                    markRectWeight(frame, locationsList, foundLocationsList, foundWeightsList, widthMultiplier, heightMultiplier, (255, 0, 0), 2)
+                                # Save off detected elapsedFrames
+                                if config.saveFrames:
+                                    thread = threading.Thread(target=saveFrame, args=(frame, "%s/pedestrian-%s" % (fileDir, os.path.splitext(fileName)[0]), "%d.jpg" % recFrameNum,))
+                                    thread.start()
+                                logger.debug("Pedestrian detected locations: %s" % foundLocationsList)
                     # Haar Cascade detection?
                     elif config.detectType.lower() == "h":
                         locationsList, foundLocationsList = cascadedet.detect(movementLocations, grayImg, config.scaleFactor, config.minNeighbors, config.minWidth, config.minHeight)
