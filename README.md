@@ -1,10 +1,10 @@
 ![Title](images/title.png)
 
-If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 16.04, Debian GNU/Linux 8 (jessie) and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working. I'm trying to hardware optimize on the platforms I'm testing which are CHIP and Pine64 right now.
+If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 16.04, Debian GNU/Linux 8 (jessie) and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working.
 
 ![Pedestrian detection](images/pedestrian-detect.png)
 
-The image above is a screenshot of a video frame that has been processed by [motiondetect.py](https://github.com/sgjava/install-opencv/blob/master/opencv-python/codeferm/motiondetect.py). Motion is bounded by green boxes and pedestrians by blue boxes.
+The image above is a screenshot of a video frame that has been processed by [Motion Detector](https://github.com/sgjava/motiondetector). Motion is bounded by green boxes and pedestrians by blue boxes.
 
 You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I'll describe later on. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
 
@@ -16,9 +16,6 @@ You have to optimize extensively on platforms with an incompatible VPU/GPU such 
 * [Install libjpeg-turbo](#install-libjpeg-turbo)
 * [Install mjpg-streamer](#install-mjpg-streamer)
 * [Install OpenCV](#install-opencv)
-* [Motion Detection](#motion-detection)
-    * [Boosting Performance](#boosting-performance)
-    * [Run Motion Detection](#run-motion-detection)
 * [Java](#java)
 * [Python](#python)
 * [C++](#c)  
@@ -113,42 +110,6 @@ I have included a Java patch that is disabled by default. The patch will fix mem
 * `sudo rm nohup.out`
 * `sudo nohup ./install-opencv.sh &`
     * Use `top` to monitor until build completes
-
-### Motion Detection
-This is a good first example into the foray that is Computer Vision. This is also a practical example that you can use as the basis for other CV projects. From experience I can tell you that you need to understand the usage scenario. Simple motion detection will work well with static backgrounds, but using it outside you have to deal with cars, tree branches blowing, sudden light changes, etc. This is why built in motion detection is mostly useless on security cameras for these types of scenarios. You can use ignore bitmaps and ROI (regions of interest) to improve results with dynamic backgrounds. For instance, I can ignore my palm tree, but trigger motion if you walk in my doorway.
-
-#### Boosting Performance
-I see a lot of posts on the Internet about OpenCV performance on various ARM based SBCs being CPU intensive or slow frame capture, etc. Over time I learned the tricks of the trade and kicked it up a few notches from my own research. These techniques may not work for all usage scenarios or OpenCV functions, but they do work well for security type applications.
-
-Problem: Slow or inconsistent FPS using USB camera.
-
-Solution: Use MJPEG compatible USB camera, mjpg-streamer and my [mjpegclient.py](https://github.com/sgjava/install-opencv/blob/master/opencv-python/codeferm/mjpegclient.py).
-
-Solution: Use threading and a frame buffer to get consistent FPS from camera. Even with recording video and background events you will get very consistent FPS from cameras that allow you to set the FPS. Some cameras have dynamic FPS based on contrast and light. This can be tricky when dealing with fixed FPS video codecs.
-
-Problem: OpenCV functions max out the CPU resulting in low FPS.
-
-Solution: Resize image before any processing. Check out [Pedestrian Detection OpenCV](http://www.pyimagesearch.com/2015/11/09/pedestrian-detection-opencv) as it covers reduction in detection time and improved detection accuracy. The pedestrian HOG detector was trained with 64 x 128 images, so a 320x240 image is fine for some scenarios. As you go up in resolution you get even better performance versus operating on the full sized image. This article also touches on non-maxima suppression which is basically removing overlapping rectangles from detection type functions.
-
-Solution: Sample only some frames. Motion detection using the moving average algorithm works best at around 3 or 4 FPS. This works to our advantage since that is an ideal time to do other types of detection such as for pedestrians. This also works out well as your camera FPS goes higher. That means ~3 FPS are processed even at 30 FPS. You still have to consider video recording overhead since that's still 30 FPS.
-
-Solution: Analyze only motion ROI (regions of interest). By analyzing only ROI you can cut down processing time tremendously. For instance, if only 10% of the frame has motion then the OpenCV function should run about 900% faster! This may not work where there's a large change frame after frame. Luckily this will not happen for most security type scenarios. If a region is too small for the detector it is not processed thus speeding things up even more.
-
-#### Run Motion Detection
-If you wish to execute remote commands after detection then you should generate ssh keypair, so you do not have to pass passwords around or save them in a file. It's handy to scp video files to a central server or cloud storage after detection.
-* ssh-keygen
-* ssh-copy-id user@host
-
-The default [motiondetect.ini](https://github.com/sgjava/install-opencv/blob/master/opencv-python/config/motiondetect.ini) is configured to detect pedestrians from a local video file in the project. Try this first and make sure it works properly.
-* `cd ~/install-opencv/opencv-python/codeferm`
-* `python motiondetect.py`
-* Video will record to ~/motion/test using camera name (default test), date for directory and time for file name
-* This is handy for debugging issues or fine tuning using the same file over and over
-
-This time we will run mjpg-streamer in background. Using `-b` did not work for me as a normal user, so I used `nohup`. Eventually mjpg-streamer will become a service, but this works for testing. To run example yourself use (this is 5 FPS example):
-* `cd ~/install-opencv/opencv-python/codeferm`
-* `nohup mjpg_streamer -i "/usr/local/lib/input_uvc.so -n -f 5 -r 640x480" -o "/usr/local/lib/output_http.so -w /usr/local/www" &`
-* `nohup python motiondetect.py &`
 
 ### Java
 To run Java programs in Eclipse you need add the OpenCV library.
