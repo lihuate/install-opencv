@@ -74,7 +74,7 @@ This is probably the easiest way to install everything, but you can follow the i
 * `sudo nohup ./install.sh &`
     * Use `top` to monitor until build completes
 
-###Install Java and Ant
+### Install Java and Ant
 * `cd ~/install-opencv/scripts`
 * `sudo ./install-java.sh`
 * `java -version`
