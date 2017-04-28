@@ -62,6 +62,7 @@ If you plan on processing only video or image files then you can skip this secti
 with an out of memory exception. To create a 1GB swap file use:
     * `sudo su -`
     * `dd if=/dev/zero of=tmpswap bs=1024 count=1M`
+    * `chmod 600 tmpswap`
     * `mkswap tmpswap`
     * `swapon tmpswap`
     * `free`
