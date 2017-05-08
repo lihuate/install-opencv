@@ -10,6 +10,8 @@
 #
 # x86 generic (no GPU/VPU optimizations)
 #
+# If you get SSSE3 - NOT AVAILABLE error add -DENABLE_SSSE3=OFF
+#
 # extracflag=""
 # cmakeopts="-DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_QT=OFF -DWITH_GTK=OFF -DWITH_TBB=ON -DBUILD_TBB=ON"
 #
