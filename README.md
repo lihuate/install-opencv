@@ -1,6 +1,6 @@
 ![Title](images/title.png)
 
-If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 16.04, Debian GNU/Linux 8 (jessie) and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working.
+If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python (or Java or C++) to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 16.04, Debian GNU/Linux 8 (jessie) and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working.
 
 ![Pedestrian detection](images/pedestrian-detect.png)
 
