@@ -27,6 +27,11 @@
 # extra_c_flag="-mtune=cortex-a53"
 # cmakeopts="-DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_QT=OFF -DWITH_GTK=OFF -DWITH_TBB=ON -DBUILD_TBB=ON -DWITH_CAROTENE=OFF"
 #
+# NanoPi Duo - Used 512MB version + swap and still ran out of memory, so use this
+#
+# extracflag="--param ggc-min-expand=0 --param ggc-min-heapsize=8192"
+# cmakeopts="-DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_QT=OFF -DWITH_GTK=OFF -DWITH_TBB=ON -DBUILD_TBB=OFF -DENABLE_NEON=ON"
+#
 # Steven P. Goldsmith
 # sgjava@gmail.com
 # 
