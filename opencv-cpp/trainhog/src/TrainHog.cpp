@@ -3,18 +3,6 @@
  *
  * Created by Steven P. Goldsmith on November 5, 2017
  * sgoldsmith@codeferm.com
- *
- * This code was lifted from OpenCV samples and modified to work with latest OpenCV and Eclipse Oxygen.
- *
- * Download INRIA Person Dataset training images from http://pascal.inrialpes.fr/data/human and train/test with:
- *
- * -d -dw=64 -dh=128 -pd=~/INRIAPerson/train_64x128_H96/pos -nd=~/INRIAPerson/train_64x128_H96/neg -tv=~/test.avi
- *
- * Test only with:
- *
- * -t -fn=my_detector.yml -tv=~/test.avi
- *
- * I added negative images to ~/INRIAPerson/train_64x128_H96/neg to decrease false positives.
  */
 
 #include <opencv2/imgproc.hpp>
@@ -29,6 +17,20 @@
 using namespace cv;
 using namespace cv::ml;
 using namespace std;
+
+/**
+ * This code was lifted from OpenCV samples and modified to work with latest OpenCV and Eclipse Oxygen CDT.
+ *
+ * Download INRIA Person Dataset training images from http://pascal.inrialpes.fr/data/human and train/test with:
+ *
+ * -d -dw=64 -dh=128 -pd=~/INRIAPerson/train_64x128_H96/pos -nd=~/INRIAPerson/train_64x128_H96/neg -tv=~/test.avi
+ *
+ * Test only with:
+ *
+ * -t -fn=my_detector.yml -tv=~/test.avi
+ *
+ * I added negative images to ~/INRIAPerson/train_64x128_H96/neg to decrease false positives.
+ */
 
 void get_svm_detector(const Ptr<SVM> & svm, vector<float> & hog_detector);
 void convert_to_ml(const std::vector<Mat> & train_samples, Mat& trainData);
