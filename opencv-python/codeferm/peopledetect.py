@@ -25,7 +25,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 # If no args passed then default to internal file
 if len(sys.argv) < 2:
-    url = "../../resources/960x720.mp4"
+    url = "../../resources/walking.mp4"
 else:
     url = sys.argv[1]
 outputFile = "../../output/people-detect-python.avi"
