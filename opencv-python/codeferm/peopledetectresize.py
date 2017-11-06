@@ -75,7 +75,7 @@ if __name__ == '__main__':
     logger.addHandler(handler)
     # If no args passed then default to internal file
     if len(sys.argv) < 2:
-        url = "../../resources/960x720.mp4"
+        url = "../../resources/walking.mp4"
     else:
         url = sys.argv[1]
     outputFile = "../../output/people-detect-resize-python.avi"
@@ -128,7 +128,7 @@ if __name__ == '__main__':
                 # Generate work image by blurring
                 workImg = cv2.blur(resizeImg, (8, 8))
                 # Generate moving average image if needed
-                if movingAvgImg == None:
+                if movingAvgImg is None:
                     movingAvgImg = numpy.float32(workImg)
                 # Generate moving average image
                 cv2.accumulateWeighted(workImg, movingAvgImg, .03)
