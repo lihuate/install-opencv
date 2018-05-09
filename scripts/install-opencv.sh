@@ -72,7 +72,8 @@ apt-get -y install opencl-headers libtbb2 libtbb-dev libeigen3-dev libatlas-base
 
 cd "$buildhome" >> $logfile 2>&1
 log "Cloning opencv..."
-git clone --depth 1 https://github.com/Itseez/opencv.git >> $logfile 2>&1
+#git clone --depth 1 https://github.com/Itseez/opencv.git >> $logfile 2>&1
+git clone --branch 3.4.1 --depth 1 https://github.com/Itseez/opencv.git >> $logfile 2>&1
 log "Cloning opencv_contrib..."
 git clone --depth 1 https://github.com/Itseez/opencv_contrib.git >> $logfile 2>&1
 
