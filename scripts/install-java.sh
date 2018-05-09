@@ -71,7 +71,7 @@ mkdir -p "$tmpdir" >> $logfile 2>&1
 
 # Install Oracle Java JDK
 echo -n "Downloading $jdkarchive to $tmpdir     "
-wget --directory-prefix=$tmpdir --timestamping --progress=dot --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "$jdkurl$jdkarchive" 2>&1 | grep --line-buffered "%" |  sed -u -e "s,\.,,g" | awk '{printf("\b\b\b\b%4s", $2)}'
+wget --directory-prefix=$tmpdir --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "$jdkurl$jdkarchive" >> $logfile 2>&1
 echo
 log "Extracting $jdkarchive to $tmpdir"
 tar -xf "$tmpdir/$jdkarchive" -C "$tmpdir" >> $logfile 2>&1
