@@ -46,8 +46,8 @@ fi
 
 # Apache Ant
 anturl="https://www.apache.org/dist/ant/binaries/"
-antarchive="apache-ant-1.10.1-bin.tar.gz"
-antver="apache-ant-1.10.1"
+antarchive="apache-ant-1.10.3-bin.tar.gz"
+antver="apache-ant-1.10.3"
 anthome="/opt/ant"
 antbin="/opt/ant/bin"
 
@@ -70,9 +70,8 @@ rm -rf "$tmpdir" >> $logfile 2>&1
 mkdir -p "$tmpdir" >> $logfile 2>&1
 
 # Install Oracle Java JDK
-echo -n "Downloading $jdkarchive to $tmpdir     "
+log "Downloading $jdkarchive to $tmpdir"
 wget --directory-prefix=$tmpdir --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "$jdkurl$jdkarchive" >> $logfile 2>&1
-echo
 log "Extracting $jdkarchive to $tmpdir"
 tar -xf "$tmpdir/$jdkarchive" -C "$tmpdir" >> $logfile 2>&1
 log "Removing $javahome"
@@ -95,9 +94,8 @@ fi
 
 # Install latest ANT without all the junk from 'apt-get install ant'
 log "Installing Ant $antver..."
-echo -n "Downloading $anturl$antarchive to $tmpdir     "
-wget --directory-prefix=$tmpdir --timestamping --progress=dot "$anturl$antarchive" 2>&1 | grep --line-buffered "%" |  sed -u -e "s,\.,,g" | awk '{printf("\b\b\b\b%4s", $2)}'
-echo
+log "Downloading $anturl$antarchive to $tmpdir     "
+wget --directory-prefix=$tmpdir "$anturl$antarchive" >> $logfile 2>&1
 log "Extracting $tmpdir/$antarchive to $tmpdir"
 tar -xf "$tmpdir/$antarchive" -C "$tmpdir" >> $logfile 2>&1
 log "Removing $anthome"
