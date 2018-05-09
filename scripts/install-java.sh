@@ -28,7 +28,7 @@ curdir=$(cd `dirname $0` && pwd)
 
 # JDK archive stuff
 
-jdkurl="http://download.oracle.com/otn-pub/java/jdk/8u162-b12/0da788060d494f5095bf8624735fa2f1/"
+jdkurl="http://download.oracle.com/otn-pub/java/jdk/8u172-b11/a58eab1ec242421181065cdc37240b08/"
 jdkver="jdk1.8.0_172"
 # ARM 32
 if [ "$arch" = "armv7l" ]; then
