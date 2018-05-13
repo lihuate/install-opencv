@@ -62,10 +62,10 @@ apt-get -y install build-essential pkg-config cmake yasm doxygen >> $logfile 2>&
 apt-get -y install libpng-dev libtiff5-dev >> $logfile 2>&1
 
 # Install video I/O libraries, support for Firewire video cameras and video streaming libraries
-apt-get -y install libdc1394-22-dev libavcodec-dev libavformat-dev libswscale-dev libavresample-dev libx264-dev libv4l-dev >> $logfile 2>&1
+apt-get -y install libdc1394-22-dev libavcodec-dev libavformat-dev libswscale-dev libavresample-dev libx264-dev libx265-dev libv4l-dev >> $logfile 2>&1
 
-# Install the Python development environment and the Python Numerical library
-apt-get -y install python-dev python-numpy python3-dev python3-numpy >> $logfile 2>&1
+# Install the Python 3 development environment and the Python Numerical library
+apt-get -y install python3-dev python3-numpy >> $logfile 2>&1
 
 # Install the parallel code processing and linear algebra library
 apt-get -y install opencl-headers libtbb2 libtbb-dev libeigen3-dev libatlas-base-dev >> $logfile 2>&1
