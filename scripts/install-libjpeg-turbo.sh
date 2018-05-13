@@ -67,12 +67,10 @@ sed -i 's~WARNMS(cinfo, JWRN_NOT_SEQUENTIAL);~//WARNMS(cinfo, JWRN_NOT_SEQUENTIA
 sed -i 's~WARNMS2(cinfo, JWRN_EXTRANEOUS_DATA~//WARNMS2(cinfo, JWRN_EXTRANEOUS_DATA~g' "$buildhome/libjpeg-turbo/jdmarker.c" >> $logfile 2>&1
 cd libjpeg-turbo >> $logfile 2>&1
 mkdir build >> $logfile 2>&1
-log "autoreconf"
-autoreconf -fiv >> $logfile 2>&1
+log "cmake..."
+cmake -G"Unix Makefiles" >> $logfile 2>&1
 cd build >> $logfile 2>&1
-log "Configure..."
-sh ../configure >> $logfile 2>&1
-log "Make..."
+log "make..."
 make -j$(getconf _NPROCESSORS_ONLN) >> $logfile 2>&1
 log "Install..."
 make install >> $logfile 2>&1
