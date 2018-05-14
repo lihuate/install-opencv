@@ -89,7 +89,7 @@ if [ "$patchjava" = "True" ]; then
 	log "Patching Java source to fix memory issues pre cmake"
 
 	# Patch gen_java.py to generate nativeObj as not final, so it can be modified by free() method
-	sed -i ':a;N;$!ba;s/protected final long nativeObj/protected long nativeObj/g' "$opencvhome/home/servadmin/opencv/modules/java/generator/templates/java_class.prolog"
+	sed -i ':a;N;$!ba;s/protected final long nativeObj/protected long nativeObj/g' "$opencvhome/modules/java/generator/templates/java_class.prolog"
 
 	# Patch gen_java.py to generate free() instead of finalize() methods
 	sed -i ':a;N;$!ba;s/@Override\n    protected void finalize() throws Throwable {\n        delete(nativeObj);\n    }/public void free() {\n        if (nativeObj != 0) {\n            delete(nativeObj);\n            nativeObj = 0;\n        }    \n    }/g' "$opencvhome/modules/java/generator/gen_java.py"
