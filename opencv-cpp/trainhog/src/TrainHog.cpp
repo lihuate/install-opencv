@@ -32,6 +32,9 @@ using namespace std;
  * I added negative images to ~/INRIAPerson/train_64x128_H96/neg to decrease false positives.
  */
 
+const int CV_TERMCRIT_ITER = 1;
+const int CV_TERMCRIT_EPS = 2;
+
 void get_svm_detector(const Ptr<SVM> & svm, vector<float> & hog_detector);
 void convert_to_ml(const std::vector<Mat> & train_samples, Mat& trainData);
 void load_images(const String & dirname, vector<Mat> & img_lst,
