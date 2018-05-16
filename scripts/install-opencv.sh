@@ -7,7 +7,7 @@
 # Install OpenCV
 #
 # This should work on other ARM based systems with similar architecture and
-# Ubuntu as well.
+# Ubuntu/Debian as well.
 #
 # Steven P. Goldsmith
 # sgjava@gmail.com
