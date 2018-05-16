@@ -6,11 +6,21 @@
  */
 
 #include <glob.h>
-#include <iostream>
 #include <sys/time.h>
-#include <sstream>
 #include <vector>
-#include <opencv2/opencv.hpp>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <ctime>
+#include <cstdio>
+
+#include <opencv2/core.hpp>
+#include <opencv2/core/utility.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
 
 using namespace std;
 using namespace cv;
@@ -56,7 +66,8 @@ vector<string> globVector(const string& pattern) {
 vector<Point2f> getCorners(Mat gray, Size pattern_size, Size win_size,
 		Size zone_size) {
 	vector<Point2f> corners;
-	if (findChessboardCorners(gray, pattern_size, corners)) {
+	if (findChessboardCorners(gray, pattern_size, corners,
+			CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE)) {
 		cornerSubPix(gray, corners, win_size, zone_size, CRITERIA);
 	}
 	return corners;
@@ -190,7 +201,7 @@ void undistortAll(string in_mask, string out_dir, Mat camera_matrix,
 	vector<string> files = globVector(in_mask);
 	for (size_t i = 0, max = files.size(); i != max; ++i) {
 		// Read in image unchanged
-		Mat mat = imread(files[i], CV_LOAD_IMAGE_UNCHANGED);
+		Mat mat = imread(files[i], IMREAD_UNCHANGED);
 		Mat undistort_img = undistort(mat, camera_matrix, dist_coeffs);
 		// Get just file name from path
 		string just_file_name = files[i].substr(files[i].find_last_of("/") + 1,
@@ -221,7 +232,7 @@ pair<Mat, Mat> getPoints(string in_mask, string out_dir, Size pattern_size) {
 	vector<Mat> images(files.size());
 	int passed = 0;
 	for (size_t i = 0, max = files.size(); i != max; ++i) {
-		Mat mat = imread(files[i], CV_LOAD_IMAGE_GRAYSCALE);
+		Mat mat = imread(files[i], IMREAD_GRAYSCALE);
 		vector<Point2f> corners;
 		Size win_size = Size(5, 5);
 		Size zone_size = Size(-1, -1);
@@ -336,8 +347,8 @@ int main(int argc, char *argv[]) {
 	saveMat(data.second, out_dir + "dist-coefs.xml");
 	// Load mats
 	cout << "Restoring calibration parameters from file" << endl;
-	Mat camera_matrix =loadMat(out_dir + "camera-matrix.xml");
-	Mat dist_coeffs	= loadMat(out_dir + "dist-coefs.xml");
+	Mat camera_matrix = loadMat(out_dir + "camera-matrix.xml");
+	Mat dist_coeffs = loadMat(out_dir + "dist-coefs.xml");
 	cout << "Camera matrix: " << camera_matrix << endl;
 	cout << "Distortion coefficients: " << dist_coeffs << endl;
 	timeval end_time;
