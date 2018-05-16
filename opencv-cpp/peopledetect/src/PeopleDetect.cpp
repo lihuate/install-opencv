@@ -39,8 +39,8 @@ int main(int argc, char *argv[]) {
 	capture.open(url);
 	// See if video capture opened
 	if (capture.isOpened()) {
-		cout << "Resolution: " << capture.get(CV_CAP_PROP_FRAME_WIDTH) << "x"
-				<< capture.get(CV_CAP_PROP_FRAME_HEIGHT) << endl;
+		cout << "Resolution: " << capture.get(CAP_PROP_FRAME_WIDTH) << "x"
+				<< capture.get(CAP_PROP_FRAME_HEIGHT) << endl;
 		bool exit_loop = false;
 		// Video writer
 		VideoWriter writer(output_file, (int) capture.get(CAP_PROP_FOURCC),
