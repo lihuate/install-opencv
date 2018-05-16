@@ -6,21 +6,11 @@
  */
 
 #include <glob.h>
-#include <sys/time.h>
-#include <vector>
 #include <iostream>
+#include <sys/time.h>
 #include <sstream>
-#include <string>
-#include <ctime>
-#include <cstdio>
-
-#include <opencv2/core.hpp>
-#include <opencv2/core/utility.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/calib3d.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
+#include <vector>
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace cv;
@@ -66,8 +56,7 @@ vector<string> globVector(const string& pattern) {
 vector<Point2f> getCorners(Mat gray, Size pattern_size, Size win_size,
 		Size zone_size) {
 	vector<Point2f> corners;
-	if (findChessboardCorners(gray, pattern_size, corners,
-			CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE)) {
+	if (findChessboardCorners(gray, pattern_size, corners)) {
 		cornerSubPix(gray, corners, win_size, zone_size, CRITERIA);
 	}
 	return corners;
@@ -347,8 +336,8 @@ int main(int argc, char *argv[]) {
 	saveMat(data.second, out_dir + "dist-coefs.xml");
 	// Load mats
 	cout << "Restoring calibration parameters from file" << endl;
-	Mat camera_matrix = loadMat(out_dir + "camera-matrix.xml");
-	Mat dist_coeffs = loadMat(out_dir + "dist-coefs.xml");
+	Mat camera_matrix =loadMat(out_dir + "camera-matrix.xml");
+	Mat dist_coeffs	= loadMat(out_dir + "dist-coefs.xml");
 	cout << "Camera matrix: " << camera_matrix << endl;
 	cout << "Distortion coefficients: " << dist_coeffs << endl;
 	timeval end_time;
