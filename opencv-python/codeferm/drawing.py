@@ -43,15 +43,15 @@ start = time.time()
 # Draw text
 cv2.putText(mat, 'Python drawing', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, white, 2, cv2.LINE_AA)
 # Draw line
-mat = cv2.line(mat, (width / 2 - 100, height / 2 - 100), (width / 2 + 100, height / 2 + 100), white, 2)
+mat = cv2.line(mat, (width // 2 - 100, height // 2 - 100), (width // 2 + 100, height // 2 + 100), white, 2)
 # Draw circle
-mat = cv2.circle(mat, (width / 2 - 1, height / 2 - 1), 100, red, 2)
+mat = cv2.circle(mat, (width // 2 - 1, height // 2 - 1), 100, red, 2)
 # Draw ellipse
-mat = cv2.ellipse(mat, (width / 2 - 1, height / 2 - 1), (110, 160), 45.0, 0.0, 360.0, blue, 2)
+mat = cv2.ellipse(mat, (width // 2 - 1, height // 2 - 1), (110, 160), 45.0, 0.0, 360.0, blue, 2)
 # Draw rectangle
-mat = cv2.rectangle(mat, (width / 2 - 50, height / 2 - 50), (width / 2 + 50, height / 2 + 50), blue, 2)
+mat = cv2.rectangle(mat, (width // 2 - 50, height // 2 - 50), (width // 2 + 50, height // 2 + 50), blue, 2)
 # Draw filled rectangle
-mat = cv2.rectangle(mat, (width / 2 - 40, height / 2 - 40), (width / 2 + 40, height / 2 + 40), green, cv2.FILLED)
+mat = cv2.rectangle(mat, (width // 2 - 40, height // 2 - 40), (width // 2 + 40, height // 2 + 40), green, cv2.FILLED)
 elapsed = time.time() - start
 cv2.imwrite(outputFile, mat)
 logger.info("Elapsed time: %4.2f seconds" % elapsed)
