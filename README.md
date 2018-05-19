@@ -1,7 +1,4 @@
 ![Title](images/title.png)
-
-#### Note: In the process of Upgrading to Ubuntu 18.04, OpenCV 4.0.0-pre and testing example code. 
-
 If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python (or Java or C++) to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 18.04, Debian GNU/Linux 9 and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working.
 
 ![Pedestrian detection](images/pedestrian-detect.png)
