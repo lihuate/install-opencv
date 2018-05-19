@@ -11,14 +11,15 @@ sgoldsmith@codeferm.com
 
 """
 
-import socket, urlparse, base64, numpy, cv2
+import socket, base64, numpy, cv2
+from urllib.parse import urlparse
 
 def open(url, timeout):
     """Open socket"""
     # Set socket timeout
     socket.setdefaulttimeout(timeout)
     # Parse URL
-    parsed = urlparse.urlparse(url)
+    parsed = urlparse(url)
     port = parsed.port
     # Set port to default if not set
     if not port:
@@ -49,21 +50,21 @@ def open(url, timeout):
     streamSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     streamSock.connect((parsed.hostname, port))
     # Socket file in read, write, binary mode and no buffer
-    socketFile = streamSock.makefile("rwb", bufsize=0)
+    socketFile = streamSock.makefile("rwb", buffering=None)
     # Send HTTP GET for MJPEG stream
-    socketFile.write("\r\n".join(lines) + "\r\n\r\n")
+    socketFile.write("\r\n".join(lines).encode('utf-8') + b"\r\n\r\n")
+    socketFile.flush()
     # Read in HTTP headers
     line = socketFile.readline()
-    while len(line) > 0 and line.strip() != "":
-        parts = line.split(":")
-        if len(parts) > 1 and parts[0].lower() == "content-type":
-            # Extract boundary string from content-type
-            content_type = parts[1].strip()
-            boundary = content_type.split(";")[1].split("=")[1]
+    boundary = b""
+    while len(line) > 0 and line.strip() != b"" and boundary == b"":
+        if line.lower().find(b"content-type: multipart") >= 0:
+            parts = line.split(b":")
+            if len(parts) > 1 and parts[0].lower() == b"content-type":
+                # Extract boundary string from content-type
+                content_type = parts[1].strip()
+                boundary = content_type.split(b";")[1].split(b"=")[1]
         line = socketFile.readline()
-    # See if we found "content-type"
-    if not boundary:
-        raise Exception("Cannot find content-type")
     return socketFile, streamSock, boundary
 
 def getFrameLength(socketFile, boundary):
@@ -72,10 +73,13 @@ def getFrameLength(socketFile, boundary):
     # Find boundary
     while len(line) > 0 and line.count(boundary) == 0:
         line = socketFile.readline()
+    length = 0
     # Read in chunk headers
-    while len(line) > 0 and line.strip() != "":
-        parts = line.split(":")
-        if len(parts) > 1 and parts[0].lower().count("content-length") > 0:
+    while len(line) > 0 and line.strip() != "" and length == 0:
+        parts = line.split(b":")
+        if len(parts) > 1 and parts[0].lower().count(b"content-length") > 0:
+            # Toss \r\n
+            socketFile.readline()
             # Grab chunk length
             length = int(parts[1].strip())
         line = socketFile.readline()

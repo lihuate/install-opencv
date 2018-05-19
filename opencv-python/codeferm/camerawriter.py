@@ -34,7 +34,7 @@ if len(sys.argv) < 5:
     frames = 200
     fourcc = "XVID"
     fps = 5
-    outputFile = "camera.avi"
+    outputFile = "../../output/camera.avi"
 else:
     url = sys.argv[1]
     frames = int(sys.argv[2])

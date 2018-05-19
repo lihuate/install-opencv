@@ -104,7 +104,7 @@ def reprojectionError(objPoints, imgPoints, rVecs, tVecs, cameraMatrix, distCoef
     """Re-projection error gives a good estimation of just how exact the found parameters are. This should be as close to zero as possible."""
     totalError = 0
     totalPoints = 0  
-    for i in xrange(len(objPoints)):
+    for i in range(len(objPoints)):
         reprojectedPoints, _ = cv2.projectPoints(objPoints[i], rVecs[i], tVecs[i], cameraMatrix, distCoefs)
         reprojectedPoints = reprojectedPoints.reshape(-1, 2)
         totalError += numpy.sum(numpy.abs(imgPoints[i] - reprojectedPoints) ** 2)
