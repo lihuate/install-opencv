@@ -75,6 +75,21 @@ make -j$(getconf _NPROCESSORS_ONLN) >> $logfile 2>&1
 log "Install..."
 make install >> $logfile 2>&1
 
+# See if LD_LIBRARY_PATH exists and if not add it to /etc/environment
+if grep -q "LD_LIBRARY_PATH" /etc/environment; then
+	log "LD_LIBRARY_PATH already exists"
+else
+	# Add LD_LIBRARY_PATH to /etc/environment
+	log "Adding LD_LIBRARY_PATH to /etc/environment"
+	if [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
+		echo "LD_LIBRARY_PATH=/opt/libjpeg-turbo/lib64" >> /etc/environment
+	else
+		echo "LD_LIBRARY_PATH=/opt/libjpeg-turbo/lib32" >> /etc/environment
+	fi
+	. /etc/environment
+fi
+
+
 # ARM 64, x86_64
 if [ "$arch" = "aarch64" ] || [ "$arch" = "x86_64" ]; then
 	# See if LD_LIBRARY_PATH exists and if not add it to /etc/environment
