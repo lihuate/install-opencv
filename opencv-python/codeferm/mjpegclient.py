@@ -14,7 +14,7 @@ sgoldsmith@codeferm.com
 import socket, base64, numpy, cv2
 from urllib.parse import urlparse
 
-def open(url, timeout):
+def openUrl(url, timeout):
     """Open socket"""
     # Set socket timeout
     socket.setdefaulttimeout(timeout)
@@ -38,7 +38,7 @@ def open(url, timeout):
         ]
     else:
         # Base64 encode username and password
-        token = base64.encodestring("%s:%s" % (parsed.username, parsed.password)).strip()
+        token = base64.b64encode(("%s:%s" % (parsed.username, parsed.password)).encode('utf-8')).decode('utf-8')
         # Build HTTP header
         lines = [
             "GET %s HTTP/1.1" % path,
@@ -67,7 +67,7 @@ def open(url, timeout):
         line = socketFile.readline()
     return socketFile, streamSock, boundary
 
-def getFrameLength(socketFile, boundary):
+def getFrameLength(socketFile, boundary, extraln):
     """Get frame length from stream"""
     line = socketFile.readline()
     # Find boundary
@@ -82,10 +82,14 @@ def getFrameLength(socketFile, boundary):
             socketFile.readline()
             # Grab chunk length
             length = int(parts[1].strip())
-        line = socketFile.readline()
+            # For mjpg_streamer
+            if extraln:
+                line = socketFile.readline()
+        else:
+            line = socketFile.readline()
     return length
 
-def getFrame(socketFile, boundary):
+def getFrame(socketFile, boundary, extraln):
     """Get raw frame data from stream and decode"""
-    jpeg = socketFile.read(getFrameLength(socketFile, boundary))
+    jpeg = socketFile.read(getFrameLength(socketFile, boundary, extraln))
     return jpeg, cv2.imdecode(numpy.fromstring(jpeg, numpy.uint8), cv2.IMREAD_COLOR)
