@@ -8,6 +8,8 @@ The image above is a screenshot of a video frame that has been processed by [Mot
 
 You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I describe in the [Motion Detector](https://github.com/sgjava/motiondetector) project. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
 
+**Note:** See [VideoCapture memory leak issue with OpenCV 3.4 and 4.0.0-dev](https://github.com/sgjava/motiondetector/issues/4). My mjpegclient still works fine. I'm troubleshooting the VideoCapture issue.
+
 * [Provides](#provides)
 * [Test Camera](#test-camera)
 * [Download project](#download-project)
