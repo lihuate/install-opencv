@@ -8,8 +8,6 @@ The image above is a screenshot of a video frame that has been processed by [Mot
 
 You have to optimize extensively on platforms with an incompatible VPU/GPU such as the Mali 400. The [CHIP](https://getchip.com/pages/chip) SBC only has one CPU core, but you can do real time object detection using techniques I describe in the [Motion Detector](https://github.com/sgjava/motiondetector) project. These methods will scale nicely on multi-core SBCs and x86 computers. The extra processing time on multi-core systems can be leveraged for milti-detection or other processing.
 
-**Note:** See [VideoCapture memory leak issue with OpenCV 3.4 and 4.0.0-dev](https://github.com/sgjava/motiondetector/issues/4). My mjpegclient still works fine. I'm troubleshooting the VideoCapture issue.
-
 * [Provides](#provides)
 * [Test Camera](#test-camera)
 * [Download project](#download-project)
@@ -73,6 +71,8 @@ with an out of memory exception. To create a 1GB swap file use:
 This is probably the easiest way to install everything, but you can follow the individual steps below to build or rebuild individual components. There are values you can change in the individual scripts, so read them over. Skip the rest of the individual scripts below if you run this.
 * `cd ~/install-opencv/scripts`
 * Edit `config.sh` and make changes as needed
+* Edit `install-opencv.sh` and change version as needed. VideoCapture is leaking memory in OpenCV 4.0.0-dev with RTSP using FFMPEG and
+RTSP using GStreamer pipeline. OpenCV 3.4.1-dev leaks with FFMPEG, but works with GStreamer. My mjpegclient continues to work fine.
 * `sudo nohup ./install.sh &`
     * Use `top` to monitor until build completes
 
