@@ -72,7 +72,7 @@ This is probably the easiest way to install everything, but you can follow the i
 * `cd ~/install-opencv/scripts`
 * Edit `config.sh` and make changes as needed
 * Edit `install-opencv.sh` and change version as needed. VideoCapture is leaking memory in OpenCV 4.0.0-dev with RTSP using FFMPEG and
-RTSP using GStreamer pipeline. OpenCV 3.4.1-dev leaks with FFMPEG, but works with GStreamer. My mjpegclient continues to work fine.
+RTSP using GStreamer pipeline. OpenCV 3.4.1-dev leaks with FFMPEG, and a slow leak with GStreamer. My mjpegclient continues to work fine.
 * `sudo nohup ./install.sh &`
     * Use `top` to monitor until build completes
 

@@ -28,20 +28,20 @@ curdir=$(cd `dirname $0` && pwd)
 
 # JDK archive stuff
 
-jdkurl="http://download.oracle.com/otn-pub/java/jdk/8u172-b11/a58eab1ec242421181065cdc37240b08/"
-jdkver="jdk1.8.0_172"
+jdkurl="http://download.oracle.com/otn-pub/java/jdk/8u181-b13/96a7b8442fe848ef90c96a2fad6ed6d1/"
+jdkver="jdk1.8.0_181"
 # ARM 32
 if [ "$arch" = "armv7l" ]; then
-	jdkarchive="jdk-8u172-linux-arm32-vfp-hflt.tar.gz"
+	jdkarchive="jdk-8u181-linux-arm32-vfp-hflt.tar.gz"
 # ARM 64
 elif [ "$arch" = "aarch64" ]; then
-	jdkarchive="jdk-8u172-linux-arm64-vfp-hflt.tar.gz"
+	jdkarchive="jdk-8u181-linux-arm64-vfp-hflt.tar.gz"
 # X86
 elif [ "$arch" = "i586" ] || [ "$arch" = "i686" ]; then
-	jdkarchive="jdk-8u172-linux-i586.tar.gz"
+	jdkarchive="jdk-8u181-linux-i586.tar.gz"
 # X86_64	
 elif [ "$arch" = "x86_64" ]; then
-	jdkarchive="jdk-8u172-linux-x64.tar.gz"
+	jdkarchive="jdk-8u181-linux-x64.tar.gz"
 fi
 
 # Apache Ant
