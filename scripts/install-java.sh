@@ -46,8 +46,8 @@ fi
 
 # Apache Ant
 anturl="https://www.apache.org/dist/ant/binaries/"
-antarchive="apache-ant-1.10.3-bin.tar.gz"
-antver="apache-ant-1.10.3"
+antarchive="apache-ant-1.10.5-bin.tar.gz"
+antver="apache-ant-1.10.5"
 anthome="/opt/ant"
 antbin="/opt/ant/bin"
 
