@@ -19,7 +19,6 @@ You have to optimize extensively on platforms with an incompatible VPU/GPU such 
 * [Java](#java)
 * [Python](#python)
 * [C++](#c)  
-* [References](#references)
 * [FreeBSD License](#freebsd-license)
 
 ### Provides
@@ -66,6 +65,8 @@ with an out of memory exception. To create a 1GB swap file use:
     * `mkswap tmpswap`
     * `swapon tmpswap`
     * `free`
+* If you reach the thermal limit for your board it might shut down/reboot during the compile since all CPUs are used for the build process. Lower the
+maximum CPU clock speed available with your CPU governor and try build again.
 
 ### Install The Whole Enchilada
 This is probably the easiest way to install everything, but you can follow the individual steps below to build or rebuild individual components. There are values you can change in the individual scripts, so read them over. Skip the rest of the individual scripts below if you run this.
