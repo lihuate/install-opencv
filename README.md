@@ -1,6 +1,6 @@
 ![Title](images/title.png)
 
-If you are interested in compiling the latest version of OpenCV for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python (or Java or C++) to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 18.04, Debian GNU/Linux 9 and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working.
+If you are interested in compiling the latest version of OpenCV (currently OpenCV 4.0.0-pre) for ARM based SBCs or x86 computers then this project will show you how. You should be experienced with Linux, OpenCV and Python (or Java or C++) to make the most of this project. I have created a set of scripts that automate the install process. The scripts support Ubuntu 18.04, Debian GNU/Linux 9 and probably other distributions. x86, x86_64, ARMV7 and ARMV8 are currently working.
 
 ![Pedestrian detection](images/pedestrian-detect.png)
 
@@ -125,7 +125,7 @@ To run Java programs in Eclipse you need add the OpenCV library.
 
 To run compiled class (Canny for this example) from shell:
 * `cd ~/install-opencv/opencv-java`
-* `java -Djava.library.path=/home/<username>/opencv/build/lib -cp /home/<username>/opencv/build/bin/opencv-320.jar:bin com.codeferm.opencv.Canny`
+* `java -Djava.library.path=/home/<username>/opencv/build/lib -cp /home/<username>/opencv/build/bin/opencv-400.jar:bin com.codeferm.opencv.Canny`
 
 #### Things to be aware of
 * There are no bindings generated for OpenCV's GPU module.

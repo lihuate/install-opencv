@@ -136,7 +136,7 @@ final class PeopleDetect {
                     // Print weight
                     // illustration
                     Imgproc.putText(mat, String.format("%1.2f", weightList.get(index)), fontPoint,
-                            Core.FONT_HERSHEY_PLAIN, 1.5, fontColor, 2, Core.LINE_AA, false);
+                    		Imgproc.FONT_HERSHEY_PLAIN, 1.5, fontColor, 2, Imgproc.LINE_AA, false);
                     index++;
                 }
             }

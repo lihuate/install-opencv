@@ -92,7 +92,7 @@ final class Drawing {
         final Scalar red = new Scalar(0, 0, 255);
         final long startTime = System.currentTimeMillis();
         // Draw text
-        Imgproc.putText(mat, "Java drawing", new Point(10, 30), Core.FONT_HERSHEY_COMPLEX, 1.0, white, 2);
+        Imgproc.putText(mat, "Java drawing", new Point(10, 30), Imgproc.FONT_HERSHEY_COMPLEX, 1.0, white, 2);
         // Draw line
         Imgproc.line(mat, new Point(width / 2 - 100, height / 2 - 100), new Point(width / 2 + 100, height / 2 + 100),
                 white, 2);
